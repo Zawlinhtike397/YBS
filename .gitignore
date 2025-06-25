@@ -46,4 +46,4 @@ app.*.map.json
 
 
 # Custom ignore files
-/lib/data/ybs_dump.json
+ybs_dump.json
