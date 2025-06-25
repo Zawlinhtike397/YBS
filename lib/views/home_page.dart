@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/views/map_view.dart';
+import 'package:ybs/views/search_way.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,27 +19,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // This fiel is used for testing purpose.
   late File routeFile;
+
+  // Checking flag for location service is enable or not.
   bool isPermit = false;
+
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   StreamSubscription<Position>? _positionStreamSubscription;
   bool positionStreamStarted = false;
+  Position? userPosition;
   String currentLocation = "Unknow";
 
-  double desLati = 21.8224255;
-  double desLongi = 96.3426859;
-
-  double distance = 0;
-
-  double startLati = 0;
-  double startLongi = 0;
-  
-  double liveLati = 0;
-  double liveLongi = 0;
-
-  double movement = 0;
-
-  Future<void> listenToPosition() async {
+  Future<Position?> getPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -59,66 +52,23 @@ class _HomePageState extends State<HomePage> {
     }
     if (permission == LocationPermission.whileInUse ||
         permission == LocationPermission.always) {
-      final position = await _geolocatorPlatform.getCurrentPosition(
+      return await _geolocatorPlatform.getCurrentPosition(
         locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
       );
-      startLati = position.latitude;
-      startLongi = position.longitude;
-      distance = FlutterMapMath.distanceBetween(
-        desLati,
-        desLongi,
-        position.latitude,
-        position.longitude,
-        "feet",
-      );
-      
-      if (AppData.busStopList.isEmpty) {
-        AppData.busStopList.add(
-          BusStop(
-            id: 1,
-            name: "Start",
-            latitude: startLati,
-            longitude: startLongi,
-          ),
-        );
-      }
-      if (_positionStreamSubscription == null) {
-        final positionStream = _geolocatorPlatform.getPositionStream(
-          locationSettings: LocationSettings(
-            accuracy: LocationAccuracy.reduced,
-          ),
-        );
-        _positionStreamSubscription = positionStream
-            .handleError((error) {
-              _positionStreamSubscription?.cancel();
-              _positionStreamSubscription = null;
-              setState(() {
-                currentLocation = error.toString();
-              });
-            })
-            .listen((position) async {
-              setState(() {
-                liveLati = position.latitude;
-                liveLongi = position.longitude;
-                movement = FlutterMapMath.distanceBetween(
-                  startLati,
-                  startLongi,
-                  liveLati,
-                  liveLongi,
-                  "feet",
-                );
-                currentLocation = position.toString();
-              });
-            });
-        positionStreamStarted = true;
-      }
     }
+    return null;
   }
 
   initFile() async {
     Directory appDir = await getApplicationSupportDirectory();
     String filePath = join(appDir.path, "save_route.txt");
     routeFile = await File(filePath).create();
+    try {
+      userPosition = await getPosition();
+      print(userPosition);
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -150,101 +100,69 @@ class _HomePageState extends State<HomePage> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(10),
-        child: Column(
-          spacing: 10,
-          children: [
-            Image.asset("assets/images/bus.png", width: 100),
-            Text(
-              '"YBS ဖြင့် သင့် လိုရာခရီးကို ရှေ့ဆက်ပါ"',
-              style: TextStyle(
-                color: Colors.blue,
-                fontFamily: "Z01-Umoe002",
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                shadows: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    spreadRadius: 1,
-                    blurRadius: 3,
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            spacing: 10,
+            children: [
+              SizedBox(height: 20),
+              Image.asset("assets/images/bus.png", width: 72),
+              SizedBox(height: 20),
+              Text(
+                '"YBS ဖြင့် သင့် လိုရာခရီးကို ရှေ့ဆက်ပါ"',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontFamily: "Z01-Umoe002",
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  shadows: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  SelectionCard(
+                    icon: Image.asset("assets/images/bus_route.png"),
+                    title: "ကားလိုင်းများ",
+                    onClick: () {},
+                  ),
+                  SelectionCard(
+                    icon: Image.asset("assets/images/bus_stop.png"),
+                    title: "မှတ်တိုင်များ",
+                    onClick: () {},
+                  ),
+                  SelectionCard(
+                    icon: Image.asset("assets/images/search_route.png"),
+                    title: "လမ်းကြောင်းရှာရန်",
+                    onClick: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SearchWay()),
+                      );
+                    },
+                  ),
+                  SelectionCard(
+                    icon: Image.asset("assets/images/route_history.png"),
+                    title: "History",
+                    onClick: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MapView()),
+                      );
+                    },
                   ),
                 ],
               ),
-            ),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                SelectionCard(
-                  icon: Image.asset("assets/images/bus_route.png"),
-                  title: "ကားလိုင်းများ",
-                  onClick: () {},
-                ),
-                SelectionCard(
-                  icon: Image.asset("assets/images/bus_stop.png"),
-                  title: "မှတ်တိုင်များ",
-                  onClick: () {},
-                ),
-                SelectionCard(
-                  icon: Image.asset("assets/images/search_route.png"),
-                  title: "လမ်းကြောင်းရှာရန်",
-                  onClick: () async {
-                    
-                    if (context.mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MapView(
-                            latitude: startLati,
-                            longitude: startLongi,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-
-            Text(currentLocation),
-            Text("Your movement: ${movement.toStringAsFixed(2)}"),
-
-            LinearProgressIndicator(
-              value: distance == 0 ? 0 : movement / distance,
-              backgroundColor: Colors.grey,
-              valueColor: AlwaysStoppedAnimation(Colors.blue),
-            ),
-
-            positionStreamStarted
-                ? SizedBox()
-                : MaterialButton(
-                    onPressed: () async {
-                      listenToPosition();
-                    },
-                    color: Theme.of(context).colorScheme.primary,
-                    textColor: Theme.of(context).colorScheme.onPrimary,
-                    child: Text("Start Track Location"),
-                  ),
-
-            positionStreamStarted
-                ? TextButton(
-                    onPressed: () {
-                      AppData.busStopList.add(
-                        BusStop(
-                          id: 1,
-                          name: "name",
-                          latitude: liveLati,
-                          longitude: liveLongi,
-                        ),
-                      );
-                      setState(() {});
-                    },
-                    child: Text("Mark"),
-                  )
-                : SizedBox(),
-            for (var i in AppData.busStopList)
-              SelectableText("[${i.latitude}, ${i.longitude}]"),
-            TextButton(onPressed: () {}, child: Text("Open Map")),
-          ],
+            ],
+          ),
         ),
       ),
     );

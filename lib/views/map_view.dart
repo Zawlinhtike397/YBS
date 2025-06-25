@@ -1,10 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:free_map/free_map.dart';
+import 'package:ybs/data/app_data.dart';
+import 'package:ybs/models/bus_stop.dart';
 
 class MapView extends StatefulWidget {
-  final double latitude;
-  final double longitude;
-  const MapView({super.key, required this.latitude, required this.longitude});
+  const MapView({super.key});
 
   @override
   State<MapView> createState() => _MapViewState();
@@ -12,18 +15,53 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   FmData? _address;
-  late LatLng src = LatLng(widget.latitude, widget.longitude);
-  LatLng des = LatLng(0, 0);
+  LatLng? src;
+  LatLng? des;
   MapController mapController = MapController();
   List<Marker> markers = [];
 
-  initData() {
-    markers.add(
-      Marker(
-        point: src,
-        child: Icon(Icons.location_on, size: 50, color: Colors.amber),
-      ),
-    );
+  loadBusStops() async {
+    final data = await rootBundle.loadString('assets/ybs_dump.json');
+    final json = jsonDecode(data);
+    for (var i in json) {
+      final stops = i["stop_list"];
+      for (var stop in stops) {
+        AppData.busStopList.add(
+          BusStop(
+            id: stop["line_no"],
+            name: stop["stop_mm"],
+            latitude: double.parse(stop["lat"]),
+            longitude: double.parse(stop["lng"]),
+          ),
+        );
+      }
+    }
+    for (var i in AppData.busStopList) {
+      markers.add(
+        Marker(
+          point: LatLng(i.latitude, i.longitude),
+          child: GestureDetector(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  elevation: 1,
+                  duration: Duration(seconds: 1),
+                  content: Text(
+                    i.name,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Icon(Icons.location_on, color: Colors.red),
+          ),
+        ),
+      );
+    }
     setState(() {
       markers;
     });
@@ -32,7 +70,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    initData();
+    loadBusStops();
   }
 
   @override
@@ -43,21 +81,35 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Stack(
-            children: [
-              SizedBox(
-                child: Map(controller: mapController, source: src, markers: []),
+    return Scaffold(
+      body: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: Stack(
+          children: [
+            FmMap(
+              mapController: mapController,
+              mapOptions: MapOptions(
+                minZoom: 5,
+                maxZoom: 16,
+                initialZoom: 9,
+                initialCenter: LatLng(16.8388795, 95.8519088),
+                onTap: (tapPosition, point) {},
               ),
-              Container(
+              markers: markers,
+              polylineOptions: const FmPolylineOptions(
+                strokeWidth: 3,
+                color: Colors.blue,
+              ),
+            ),
+            Positioned(
+              top: 40,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
                 height: 60,
                 padding: EdgeInsets.all(5),
                 child: FmSearchField(
                   selectedValue: _address,
-                  searchParams: const FmSearchParams(),
+                  searchParams: const FmSearchParams(langs: ["my", "en"]),
                   resultViewOptions: FmResultViewOptions(
                     overlayDecoration: BoxDecoration(color: Colors.white),
                     noTextView: Padding(
@@ -71,32 +123,25 @@ class _MapViewState extends State<MapView> {
                     separatorBuilder: (p0, p1) => SizedBox(),
                   ),
                   onSelected: (data) {
-                    _address = data;
-                    des = LatLng(data!.lat, data.lng);
-                    markers.clear();
-                    markers.add(
-                      Marker(
-                        point: src,
-                        child: Icon(
-                          Icons.location_on,
-                          size: 50,
-                          color: Colors.amber,
+                    if (data != null) {
+                      _address = data;
+                      mapController.move(LatLng(data.lat, data.lng), 16);
+                      markers.add(
+                        Marker(
+                          point: LatLng(data.lat, data.lng),
+                          child: GestureDetector(
+                            onLongPress: () {
+                              markers.removeWhere(
+                                (e) => e.point == LatLng(data.lat, data.lng),
+                              );
+                              setState(() {});
+                            },
+                            child: Icon(Icons.search, color: Colors.green),
+                          ),
                         ),
-                      ),
-                    );
-                    markers.add(
-                      Marker(
-                        point: des,
-                        child: Icon(
-                          Icons.location_on,
-                          size: 50,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    );
-                    setState(() {
-                      markers;
-                    });
+                      );
+                      setState(() {});
+                    }
                   },
                   textFieldBuilder: (focus, controller, onChanged) {
                     return TextFormField(
@@ -130,8 +175,8 @@ class _MapViewState extends State<MapView> {
                   },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

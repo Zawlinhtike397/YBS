@@ -11,11 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  geolocator: ^14.0.1
+  geolocator: ^12.0.0
   flutter_map_math: ^0.2.3
   path: ^1.9.1
   path_provider: ^2.1.5
   free_map: ^2.3.0
+  flutter_location_search: ^2.0.0
   url_launcher: ^6.3.1
 
 dev_dependencies:
@@ -32,6 +33,7 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/fonts/
+    - assets/ybs_dump.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
