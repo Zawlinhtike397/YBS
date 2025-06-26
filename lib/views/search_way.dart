@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_location_search/flutter_location_search.dart';
+import 'package:timeline_tile/timeline_tile.dart';
+import 'package:ybs/data/app_data.dart';
+import 'package:ybs/models/bus_stop.dart';
 
 class SearchWay extends StatefulWidget {
   const SearchWay({super.key});
@@ -127,21 +130,8 @@ class _SearchWayState extends State<SearchWay> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    spacing: 5,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset("assets/images/bus_stop_1.png", width: 20),
-                      Text("data"),
-                    ],
-                  ),
-                ),
+                BusStopCard(busStop: AppData.busStopList[10]),
+                BusStopCard(busStop: AppData.busStopList[11]),
               ],
             ),
           ),
@@ -161,21 +151,8 @@ class _SearchWayState extends State<SearchWay> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    spacing: 5,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset("assets/images/bus_stop_1.png", width: 20),
-                      Text("data"),
-                    ],
-                  ),
-                ),
+                BusStopCard(busStop: AppData.busStopList.first),
+                BusStopCard(busStop: AppData.busStopList[1]),
               ],
             ),
           ),
@@ -191,7 +168,7 @@ class _SearchWayState extends State<SearchWay> {
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(color: Colors.grey, width: 0.5),
                     ),
-                    child: Text("data"),
+                    child: Text("စမှတ်တိုင်"),
                   ),
                 ),
                 Expanded(
@@ -201,12 +178,96 @@ class _SearchWayState extends State<SearchWay> {
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(color: Colors.grey, width: 0.5),
                     ),
-                    child: Text("data"),
+                    child: Text("ဆုံးမှတ်တိုင်"),
                   ),
                 ),
                 IconButton(onPressed: () {}, icon: Icon(Icons.search)),
               ],
             ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  for (int i = 0; i < 5; i++)
+                    SizedBox(
+                      height: 40,
+                      child: TimelineTile(
+                        alignment: TimelineAlign.center,
+                        startChild: i == 0
+                            ? Text("Bus 1", textAlign: TextAlign.right)
+                            : null,
+                        endChild: Text(
+                          AppData.busStopList[i].name,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        indicatorStyle: IndicatorStyle(
+                          width: 15,
+                          height: 15,
+                          color: Colors.blue,
+                        ),
+                        beforeLineStyle: LineStyle(color: Colors.blue),
+                        isFirst: i == 0,
+                      ),
+                    ),
+                  for (int i = 0; i < 5; i++)
+                    SizedBox(
+                      height: 40,
+                      child: TimelineTile(
+                        alignment: TimelineAlign.center,
+                        startChild: i == 0
+                            ? Text("Bus 2", textAlign: TextAlign.right)
+                            : null,
+                        endChild: Text(
+                          AppData.busStopList[i + 5].name,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        indicatorStyle: IndicatorStyle(
+                          width: 15,
+                          height: 15,
+                          color: Colors.red,
+                        ),
+                        beforeLineStyle: LineStyle(color: Colors.red),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BusStopCard extends StatelessWidget {
+  final BusStop busStop;
+  const BusStopCard({super.key, required this.busStop});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(right: 3),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Row(
+        spacing: 5,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset("assets/images/bus_stop_2.png", width: 16),
+          Text(
+            busStop.name,
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
           ),
         ],
       ),

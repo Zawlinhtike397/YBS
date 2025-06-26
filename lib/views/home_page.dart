@@ -1,13 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map_math/flutter_geo_math.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus_stop.dart';
+import 'package:ybs/views/bus_list_page.dart';
 import 'package:ybs/views/map_view.dart';
 import 'package:ybs/views/search_way.dart';
 
@@ -59,10 +61,26 @@ class _HomePageState extends State<HomePage> {
     return null;
   }
 
-  initFile() async {
-    Directory appDir = await getApplicationSupportDirectory();
-    String filePath = join(appDir.path, "save_route.txt");
-    routeFile = await File(filePath).create();
+  loadBusStops() async {
+    final data = await rootBundle.loadString('assets/ybs_dump.json');
+    final json = jsonDecode(data);
+    for (var i in json) {
+      final stops = i["stop_list"];
+      for (var stop in stops) {
+        AppData.busStopList.add(
+          BusStop(
+            id: stop["line_no"],
+            name: stop["stop_mm"],
+            latitude: double.parse(stop["lat"]),
+            longitude: double.parse(stop["lng"]),
+          ),
+        );
+      }
+    }
+  }
+
+  initData() async {
+    loadBusStops();
     try {
       userPosition = await getPosition();
       print(userPosition);
@@ -74,7 +92,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    initFile();
+    initData();
   }
 
   @override
@@ -132,7 +150,12 @@ class _HomePageState extends State<HomePage> {
                   SelectionCard(
                     icon: Image.asset("assets/images/bus_route.png"),
                     title: "ကားလိုင်းများ",
-                    onClick: () {},
+                    onClick: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BusListPage()),
+                      );
+                    },
                   ),
                   SelectionCard(
                     icon: Image.asset("assets/images/bus_stop.png"),
