@@ -18,11 +18,6 @@ class SearchWay extends StatefulWidget {
 }
 
 class _SearchWayState extends State<SearchWay> {
-  FmData? startLocation;
-  FmData? endLocation;
-
-  List<BusStop> startPointNearBusStopList = [];
-  List<BusStop> endPointNearBusStopList = [];
   List<BusStopDistance> busStopDistanceList = [];
 
   List<Bus> startPointArrivalBusList = [];
@@ -32,32 +27,6 @@ class _SearchWayState extends State<SearchWay> {
   BusStop? end;
 
   List<BusStop> avaliableRoute = [];
-
-  void findNearestBusStop({required LatLng position, required bool isStart}) {
-    if (isStart) {
-      startPointNearBusStopList.clear();
-    } else {
-      endPointNearBusStopList.clear();
-    }
-    busStopDistanceList.clear();
-    for (var i in AppData.testStop) {
-      final busStopLocation = LatLng(i.latitude, i.longitude);
-      final distance = Geodesy().distanceBetweenTwoGeoPoints(
-        position,
-        busStopLocation,
-      );
-      busStopDistanceList.add(
-        BusStopDistance(distance: distance as double, busStop: i),
-      );
-    }
-    busStopDistanceList.sort((a, b) => a.distance.compareTo(b.distance));
-    if (isStart) {
-      startPointNearBusStopList.add(busStopDistanceList.first.busStop);
-    } else {
-      endPointNearBusStopList.add(busStopDistanceList.first.busStop);
-    }
-    setState(() {});
-  }
 
   List<BusStop> getSameBusRoute(Bus bus, BusStop start, BusStop end) {
     List<BusStop> route = [];
@@ -96,6 +65,49 @@ class _SearchWayState extends State<SearchWay> {
     }
   }
 
+  List<BusStop> getRoute(BusStop startStop, BusStop endStop) {
+    Bus startBus = AppData.testbus.firstWhere(
+      (bus) => bus.routeOne.contains(startStop.id),
+    );
+    Bus endBus = AppData.testbus.firstWhere(
+      (bus) => bus.routeOne.contains(endStop.id),
+    );
+
+    // TODO: update for more than 2 bus route or no overlap bus stop
+    // Current code is only work for the overlap bus stop trip
+    List<int> sameStopIds = [];
+    for (var id1 in startBus.routeOne) {
+      for (var id2 in endBus.routeOne) {
+        if (id1 == id2) {
+          sameStopIds.add(id1);
+        }
+      }
+    }
+
+    List<BusStop> finalRoute = [];
+    int lenght = 0;
+    for (var i in sameStopIds) {
+      List<BusStop> route = [];
+      route = getSameBusRoute(
+        startBus,
+        startStop,
+        AppData.testStop.firstWhere((stop) => stop.id == i),
+      );
+      if (lenght == 0 || lenght < route.length) {
+        lenght = route.length;
+        final route2 = getSameBusRoute(
+          endBus,
+          AppData.testStop.firstWhere((stop) => stop.id == i),
+          endStop,
+        );
+        route.addAll(route2);
+        finalRoute.clear();
+        finalRoute = route;
+      }
+    }
+    return finalRoute;
+  }
+
   List<BusStop> searchRoute(BusStop startStop, BusStop endStop) {
     avaliableRoute.clear();
     startPointArrivalBusList.clear();
@@ -107,13 +119,15 @@ class _SearchWayState extends State<SearchWay> {
         return getSameBusRoute(bus, startStop, endStop);
       }
     }
-    return [];
+
+    return getRoute(startStop, endStop);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text("Search Way"),
         titleTextStyle: TextStyle(
           color: Colors.black,
@@ -124,6 +138,7 @@ class _SearchWayState extends State<SearchWay> {
       ),
       body: Column(
         children: [
+          SizedBox(height: 5),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
             child: Row(
@@ -137,15 +152,11 @@ class _SearchWayState extends State<SearchWay> {
                       border: Border.all(width: 0.5, color: Colors.grey),
                     ),
                     child: Text(
-                      startLocation == null
-                          ? "စမှတ် သတ်မှတ်ပါ"
-                          : startLocation!.address,
+                      start == null ? "စမှတ်တိုင် ရွေးချယ်ပါ။" : start!.name,
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color: startLocation == null
-                            ? Colors.grey
-                            : Colors.black,
+                        color: start == null ? Colors.grey : Colors.black,
                       ),
                     ),
                   ),
@@ -160,17 +171,8 @@ class _SearchWayState extends State<SearchWay> {
                       ),
                     ).then((value) {
                       setState(() {
-                        startLocation = value;
+                        start = value;
                       });
-                      if (startLocation != null) {
-                        findNearestBusStop(
-                          position: LatLng(
-                            startLocation!.lat,
-                            startLocation!.lng,
-                          ),
-                          isStart: true,
-                        );
-                      }
                     });
                   },
                   icon: Icon(Icons.map),
@@ -191,13 +193,11 @@ class _SearchWayState extends State<SearchWay> {
                       border: Border.all(width: 0.5, color: Colors.grey),
                     ),
                     child: Text(
-                      endLocation == null
-                          ? "ဆုံးမှတ် သတ်မှတ်ပါ"
-                          : endLocation!.address,
+                      end == null ? "ဆုံးမှတ်တိုင် ရွေးချယ်ပါ။" : end!.name,
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color: endLocation == null ? Colors.grey : Colors.black,
+                        color: end == null ? Colors.grey : Colors.black,
                       ),
                     ),
                   ),
@@ -212,14 +212,8 @@ class _SearchWayState extends State<SearchWay> {
                       ),
                     ).then((value) {
                       setState(() {
-                        endLocation = value;
+                        end = value;
                       });
-                      if (endLocation != null) {
-                        findNearestBusStop(
-                          position: LatLng(endLocation!.lat, endLocation!.lng),
-                          isStart: false,
-                        );
-                      }
                     });
                   },
                   icon: Icon(Icons.map),
@@ -228,118 +222,16 @@ class _SearchWayState extends State<SearchWay> {
             ),
           ),
           SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-            child: Text(
-              "စမှတ်နှင့် အနီးဆုံး မှတ်တိုင်များ",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            height: 40,
-            padding: EdgeInsets.symmetric(horizontal: 5),
-            child: startPointNearBusStopList.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "အနီးဆုံးမှတ်တိုင် မရှိပါ။",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.all(5),
-                    itemCount: startPointNearBusStopList.length,
-                    itemBuilder: (context, index) => BusStopCard(
-                      busStop: startPointNearBusStopList[index],
-                      onTap: () {
-                        setState(() {
-                          start = startPointNearBusStopList[index];
-                        });
-                      },
-                    ),
-                  ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-            child: Text(
-              "ဆုံးမှတ်နှင့် အနီးဆုံး မှတ်တိုင်များ",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            height: 40,
-            padding: EdgeInsets.symmetric(horizontal: 5),
-            child: endPointNearBusStopList.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "အနီးဆုံးမှတ်တိုင် မရှိပါ။",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.all(5),
-                    itemCount: endPointNearBusStopList.length,
-                    itemBuilder: (context, index) => BusStopCard(
-                      busStop: endPointNearBusStopList[index],
-                      onTap: () {
-                        setState(() {
-                          end = endPointNearBusStopList[index];
-                        });
-                      },
-                    ),
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              spacing: 5,
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: Colors.grey, width: 0.5),
-                    ),
-                    child: start == null
-                        ? Text("စမှတ်တိုင်")
-                        : Text(start!.name),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: Colors.grey, width: 0.5),
-                    ),
-                    child: end == null
-                        ? Text("ဆုံးမှတ်တိုင်")
-                        : Text(end!.name),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    if (start != null && end != null) {
-                      avaliableRoute = searchRoute(start!, end!);
-                      setState(() {});
-                    }
-                  },
-                  icon: Icon(Icons.search),
-                ),
-              ],
-            ),
+
+          MaterialButton(
+            color: Theme.of(context).colorScheme.primary,
+            onPressed: () {
+              if (start != null && end != null) {
+                avaliableRoute = searchRoute(start!, end!);
+                setState(() {});
+              }
+            },
+            child: Text("လမ်းကြောင်းရှာပါ။"),
           ),
           Expanded(
             child: avaliableRoute.isEmpty
@@ -347,8 +239,9 @@ class _SearchWayState extends State<SearchWay> {
                 : ListView.builder(
                     itemCount: avaliableRoute.length,
                     itemBuilder: (context, index) => SizedBox(
-                      height: 40,
+                      height: 50,
                       child: TimelineTile(
+                        axis: TimelineAxis.vertical,
                         alignment: TimelineAlign.manual,
                         lineXY: 0.25,
                         startChild: index == 0
@@ -356,7 +249,10 @@ class _SearchWayState extends State<SearchWay> {
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
                                 ),
-                                child: Text("TODO", textAlign: TextAlign.right),
+                                child: Text(
+                                  "Bus Line",
+                                  textAlign: TextAlign.right,
+                                ),
                               )
                             : null,
                         endChild: Padding(

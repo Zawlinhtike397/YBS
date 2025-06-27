@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
 
   // Checking flag for location service is enable or not.
   bool isPermit = false;
+  bool isLoading = false;
 
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   StreamSubscription<Position>? _positionStreamSubscription;
@@ -79,20 +80,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  initData() async {
+  initData(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+    });
     loadBusStops();
     try {
       userPosition = await getPosition();
-      print(userPosition);
+      if (context.mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     } catch (e) {
       print(e);
+      if (context.mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    initData();
+    initData(context);
   }
 
   @override
@@ -116,96 +129,141 @@ class _HomePageState extends State<HomePage> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(10),
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            spacing: 10,
-            children: [
-              SizedBox(height: 20),
-              Image.asset("assets/images/bus.png", width: 72),
-              SizedBox(height: 20),
-              Text(
-                '"YBS ဖြင့် သင့် လိုရာခရီးကို ရှေ့ဆက်ပါ"',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontFamily: "Z01-Umoe002",
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  shadows: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      spreadRadius: 1,
-                      blurRadius: 3,
+      body: Stack(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              spacing: 10,
+              children: [
+                SizedBox(height: 20),
+                Image.asset("assets/images/bus.png", width: 72),
+                SizedBox(height: 20),
+                Text(
+                  '"YBS ဖြင့် သင့် လိုရာခရီးကို ရှေ့ဆက်ပါ"',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontFamily: "Z01-Umoe002",
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    shadows: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    SelectionCard(
+                      icon: Image.asset("assets/images/bus_route.png"),
+                      title: "ကားလိုင်းများ",
+                      onClick: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BusListPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    SelectionCard(
+                      icon: Image.asset("assets/images/bus_stop.png"),
+                      title: "မှတ်တိုင်များ",
+                      onClick: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => BusStopMap()),
+                        );
+                      },
+                    ),
+                    SelectionCard(
+                      icon: Image.asset("assets/images/search_route.png"),
+                      title: "လမ်းကြောင်းရှာရန်",
+                      onClick: () {
+                        if (!isLoading) {
+                          if (userPosition != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SearchWay(
+                                  userPosition: LatLng(
+                                    userPosition!.latitude,
+                                    userPosition!.longitude,
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                duration: Duration(seconds: 1),
+                                content: Text("Please allow location service"),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                    SelectionCard(
+                      icon: Image.asset("assets/images/route_history.png"),
+                      title: "History",
+                      onClick: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MapView(
+                              currentPosition: LatLng(
+                                userPosition!.latitude,
+                                userPosition!.longitude,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
-              ),
-              SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  SelectionCard(
-                    icon: Image.asset("assets/images/bus_route.png"),
-                    title: "ကားလိုင်းများ",
-                    onClick: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => BusListPage()),
-                      );
-                    },
-                  ),
-                  SelectionCard(
-                    icon: Image.asset("assets/images/bus_stop.png"),
-                    title: "မှတ်တိုင်များ",
-                    onClick: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => BusStopMap()),
-                      );
-                    },
-                  ),
-                  SelectionCard(
-                    icon: Image.asset("assets/images/search_route.png"),
-                    title: "လမ်းကြောင်းရှာရန်",
-                    onClick: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SearchWay(
-                            userPosition: LatLng(
-                              userPosition!.latitude,
-                              userPosition!.longitude,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SelectionCard(
-                    icon: Image.asset("assets/images/route_history.png"),
-                    title: "History",
-                    onClick: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MapView(
-                            currentPosition: LatLng(
-                              userPosition!.latitude,
-                              userPosition!.longitude,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          isLoading
+              ? Positioned(
+                  bottom: 40,
+                  left: 10,
+                  right: 10,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 10,
+                      children: [
+                        CircularProgressIndicator(
+                          color: Colors.blue,
+                          constraints: BoxConstraints(
+                            maxHeight: 20,
+                            minHeight: 20,
+                            maxWidth: 20,
+                            minWidth: 20,
+                          ),
+                        ),
+                        Text("Wait! checking your location."),
+                      ],
+                    ),
+                  ),
+                )
+              : SizedBox(),
+        ],
       ),
     );
   }

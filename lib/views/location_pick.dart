@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:free_map/free_map.dart';
+import 'package:ybs/data/app_data.dart';
+import 'package:ybs/models/bus_stop.dart';
 
 class LocationPick extends StatefulWidget {
   final LatLng currentPosition;
@@ -10,9 +12,35 @@ class LocationPick extends StatefulWidget {
 }
 
 class _LocationPickState extends State<LocationPick> {
-  late LatLng selectedPosition = widget.currentPosition;
   MapController mapController = MapController();
+  List<Marker> markers = [];
+  BusStop? selectedBusStop;
   FmData? selectedData;
+
+  setMarkers() {
+    for (var i in AppData.testStop) {
+      markers.add(
+        Marker(
+          point: LatLng(i.latitude, i.longitude),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedBusStop = i;
+              });
+            },
+            child: Icon(Icons.location_on, color: Colors.red),
+          ),
+        ),
+      );
+    }
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setMarkers();
+  }
 
   @override
   void dispose() {
@@ -37,26 +65,8 @@ class _LocationPickState extends State<LocationPick> {
                   maxZoom: 16,
                   initialZoom: 13,
                   keepAlive: true,
-                  onTap: (tapPosition, point) async {
-                    setState(() {
-                      selectedPosition = point;
-                    });
-                    mapController.move(selectedPosition, 13);
-                    selectedData = await FmService().getAddress(
-                      lat: point.latitude,
-                      lng: point.longitude,
-                    );
-                    if (context.mounted) {
-                      setState(() {});
-                    }
-                  },
                 ),
-                markers: [
-                  Marker(
-                    point: selectedPosition,
-                    child: Icon(Icons.location_on, color: Colors.red),
-                  ),
-                ],
+                markers: markers,
               ),
               Positioned(
                 top: 20,
@@ -103,8 +113,7 @@ class _LocationPickState extends State<LocationPick> {
                         ),
                     onSelected: (FmData? data) {
                       if (data != null) {
-                        selectedPosition = LatLng(data.lat, data.lng);
-                        mapController.move(selectedPosition, 13);
+                        mapController.move(LatLng(data.lat, data.lng), 13);
                       }
                       setState(() {
                         selectedData = data;
@@ -115,11 +124,36 @@ class _LocationPickState extends State<LocationPick> {
               ),
               Positioned(
                 bottom: 20,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, selectedData);
-                  },
-                  child: Text("ရွေးချယ်မည်"),
+                child: SizedBox(
+                  width: 320,
+                  child: Row(
+                    spacing: 10,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                          child: Text(
+                            selectedBusStop == null
+                                ? ""
+                                : selectedBusStop!.name,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context, selectedBusStop);
+                        },
+                        child: Text("ရွေးချယ်မည်"),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -27,7 +27,7 @@ class BusStopMap extends StatelessWidget {
           initialZoom: 15,
         ),
         markers: [
-          for (var i in AppData.busStopList)
+          for (var i in AppData.testStop)
             Marker(
               point: LatLng(i.latitude, i.longitude),
               child: Icon(Icons.location_on, color: Colors.red),
