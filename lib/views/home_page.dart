@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:free_map/free_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/views/bus_list_page.dart';
@@ -66,7 +64,6 @@ class _HomePageState extends State<HomePage> {
   loadBusStops() async {
     final data = await rootBundle.loadString('assets/ybs_dump.json');
     final json = jsonDecode(data);
-    log(data);
     for (var i in json) {
       final stops = i["stop_list"];
       for (var stop in stops) {
@@ -176,14 +173,33 @@ class _HomePageState extends State<HomePage> {
                     onClick: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SearchWay()),
+                        MaterialPageRoute(
+                          builder: (context) => SearchWay(
+                            userPosition: LatLng(
+                              userPosition!.latitude,
+                              userPosition!.longitude,
+                            ),
+                          ),
+                        ),
                       );
                     },
                   ),
                   SelectionCard(
                     icon: Image.asset("assets/images/route_history.png"),
                     title: "History",
-                    onClick: () {},
+                    onClick: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapView(
+                            currentPosition: LatLng(
+                              userPosition!.latitude,
+                              userPosition!.longitude,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

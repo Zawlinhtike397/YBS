@@ -19,6 +19,7 @@ dependencies:
   flutter_location_search: ^2.0.0
   url_launcher: ^6.3.1
   timeline_tile: ^2.0.0
+  geodesy: ^0.10.2
 
 dev_dependencies:
   flutter_test:

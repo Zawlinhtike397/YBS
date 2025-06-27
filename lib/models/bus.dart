@@ -1,11 +1,9 @@
-import 'package:ybs/models/bus_stop.dart';
-
 class Bus {
   int id;
   String name;
   String routeName;
-  List<BusStop> routeOne;
-  List<BusStop> routeTwo;
+  List<int> routeOne;
+  List<int> routeTwo;
 
   Bus({
     required this.id,

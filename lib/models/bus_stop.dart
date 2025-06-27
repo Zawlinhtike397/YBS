@@ -3,12 +3,16 @@ class BusStop {
   String name;
   double latitude;
   double longitude;
+  String township;
+  String nearPlaces;
 
   BusStop({
     required this.id,
     required this.name,
     required this.latitude,
     required this.longitude,
+    this.township = "Unknow",
+    this.nearPlaces = "Unknow",
   });
 
   factory BusStop.fromJson(Map<String, dynamic> json) => BusStop(
