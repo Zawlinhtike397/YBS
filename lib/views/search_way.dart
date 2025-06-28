@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:free_map/fm_models.dart';
-import 'package:free_map/fm_service.dart';
+import 'package:free_map/free_map.dart';
 import 'package:geodesy/geodesy.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/models/bus_stop_distance.dart';
+import 'package:ybs/models/route_data.dart';
 import 'package:ybs/views/location_pick.dart';
 
 class SearchWay extends StatefulWidget {
@@ -26,10 +26,10 @@ class _SearchWayState extends State<SearchWay> {
   BusStop? start;
   BusStop? end;
 
-  List<BusStop> avaliableRoute = [];
+  List<RouteData> avaliableRoute = [];
 
-  List<BusStop> getSameBusRoute(Bus bus, BusStop start, BusStop end) {
-    List<BusStop> route = [];
+  List<RouteData> getSameBusRoute(Bus bus, BusStop start, BusStop end) {
+    List<RouteData> route = [];
     bool startStopFound = false;
     bool endStopFound = false;
     bool isRouteOne = false;
@@ -49,7 +49,12 @@ class _SearchWayState extends State<SearchWay> {
       final endIndex = bus.routeOne.indexOf(end.id);
       for (int i = startIndex; i <= endIndex; i++) {
         route.add(
-          AppData.testStop.firstWhere((stop) => stop.id == bus.routeOne[i]),
+          RouteData(
+            bus: bus,
+            busStop: AppData.testStop.firstWhere(
+              (stop) => stop.id == bus.routeOne[i],
+            ),
+          ),
         );
       }
       return route;
@@ -58,14 +63,19 @@ class _SearchWayState extends State<SearchWay> {
       final endIndex = bus.routeTwo.indexOf(end.id);
       for (int i = startIndex; i <= endIndex; i++) {
         route.add(
-          AppData.testStop.firstWhere((stop) => stop.id == bus.routeTwo[i]),
+          RouteData(
+            bus: bus,
+            busStop: AppData.testStop.firstWhere(
+              (stop) => stop.id == bus.routeTwo[i],
+            ),
+          ),
         );
       }
       return route;
     }
   }
 
-  List<BusStop> getRoute(BusStop startStop, BusStop endStop) {
+  List<RouteData> getRoute(BusStop startStop, BusStop endStop) {
     Bus startBus = AppData.testbus.firstWhere(
       (bus) => bus.routeOne.contains(startStop.id),
     );
@@ -84,16 +94,17 @@ class _SearchWayState extends State<SearchWay> {
         }
       }
     }
-    if (sameStopIds.isEmpty) {
-      List<BusStop> finalRoute = [];
+    if (sameStopIds.isNotEmpty) {
+      List<RouteData> finalRoute = [];
       int lenght = 0;
       for (var i in sameStopIds) {
-        List<BusStop> route = [];
+        List<RouteData> route = [];
         route = getSameBusRoute(
           startBus,
           startStop,
           AppData.testStop.firstWhere((stop) => stop.id == i),
         );
+
         if (lenght == 0 || lenght < route.length) {
           lenght = route.length;
           final route2 = getSameBusRoute(
@@ -134,7 +145,7 @@ class _SearchWayState extends State<SearchWay> {
 
     busStopDistanceList.sort((a, b) => a.distance.compareTo(b.distance));
 
-    List<BusStop> finalRoute = [];
+    List<RouteData> finalRoute = [];
     final route1 = getSameBusRoute(
       startBus,
       startStop,
@@ -153,7 +164,7 @@ class _SearchWayState extends State<SearchWay> {
     return finalRoute;
   }
 
-  List<BusStop> searchRoute(BusStop startStop, BusStop endStop) {
+  List<RouteData> searchRoute(BusStop startStop, BusStop endStop) {
     avaliableRoute.clear();
     startPointArrivalBusList.clear();
     endPointArrivalBusList.clear();
@@ -181,150 +192,184 @@ class _SearchWayState extends State<SearchWay> {
         ),
         titleSpacing: 0,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(width: 0.5, color: Colors.grey),
-                    ),
-                    child: Text(
-                      start == null ? "စမှတ်တိုင် ရွေးချယ်ပါ။" : start!.name,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: start == null ? Colors.grey : Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            LocationPick(currentPosition: widget.userPosition),
-                      ),
-                    ).then((value) {
-                      setState(() {
-                        start = value;
-                      });
-                    });
-                  },
-                  icon: Icon(Icons.map),
-                ),
-              ],
-            ),
+          FmMap(
+            
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(width: 0.5, color: Colors.grey),
-                    ),
-                    child: Text(
-                      end == null ? "ဆုံးမှတ်တိုင် ရွေးချယ်ပါ။" : end!.name,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: end == null ? Colors.grey : Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            LocationPick(currentPosition: widget.userPosition),
-                      ),
-                    ).then((value) {
-                      setState(() {
-                        end = value;
-                      });
-                    });
-                  },
-                  icon: Icon(Icons.map),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 10),
-
-          MaterialButton(
-            color: Theme.of(context).colorScheme.primary,
-            onPressed: () {
-              if (start != null && end != null) {
-                avaliableRoute = searchRoute(start!, end!);
-                setState(() {});
-              }
-            },
-            child: Text("လမ်းကြောင်းရှာပါ။"),
-          ),
-          Expanded(
-            child: avaliableRoute.isEmpty
-                ? Center(child: Text("လမ်းကြောင်း မရှိပါ။"))
-                : ListView.builder(
-                    itemCount: avaliableRoute.length,
-                    itemBuilder: (context, index) => SizedBox(
-                      height: 50,
-                      child: TimelineTile(
-                        axis: TimelineAxis.vertical,
-                        alignment: TimelineAlign.manual,
-                        lineXY: 0.25,
-                        startChild: index == 0
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  "Bus Line",
-                                  textAlign: TextAlign.right,
-                                ),
-                              )
-                            : null,
-                        endChild: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: Text(
-                            avaliableRoute[index].name,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+          Column(
+            children: [
+              SizedBox(height: 5),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(width: 0.5, color: Colors.grey),
+                        ),
+                        child: Text(
+                          start == null
+                              ? "စမှတ်တိုင် ရွေးချယ်ပါ။"
+                              : start!.name,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: start == null ? Colors.grey : Colors.black,
                           ),
                         ),
-                        indicatorStyle: IndicatorStyle(
-                          width: 15,
-                          height: 15,
-                          color: Colors.blue,
-                        ),
-                        beforeLineStyle: LineStyle(color: Colors.blue),
-                        isFirst: index == 0,
                       ),
                     ),
-                  ),
+                    IconButton(
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LocationPick(
+                              currentPosition: widget.userPosition,
+                            ),
+                          ),
+                        ).then((value) {
+                          setState(() {
+                            start = value;
+                          });
+                        });
+                      },
+                      icon: Icon(Icons.map),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(width: 0.5, color: Colors.grey),
+                        ),
+                        child: Text(
+                          end == null ? "ဆုံးမှတ်တိုင် ရွေးချယ်ပါ။" : end!.name,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: end == null ? Colors.grey : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LocationPick(
+                              currentPosition: widget.userPosition,
+                            ),
+                          ),
+                        ).then((value) {
+                          setState(() {
+                            end = value;
+                          });
+                        });
+                      },
+                      icon: Icon(Icons.map),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+
+              MaterialButton(
+                color: Theme.of(context).colorScheme.primary,
+                onPressed: () {
+                  if (start != null && end != null) {
+                    avaliableRoute = searchRoute(start!, end!);
+                    setState(() {});
+                  }
+                },
+                child: Text("လမ်းကြောင်းရှာပါ။"),
+              ),
+              Expanded(
+                child: avaliableRoute.isEmpty
+                    ? Center(child: Text("လမ်းကြောင်း မရှိပါ။"))
+                    : ListView.builder(
+                        itemCount: avaliableRoute.length,
+                        itemBuilder: (context, index) => SizedBox(
+                          height: 50,
+                          child: TimelineTile(
+                            axis: TimelineAxis.vertical,
+                            alignment: TimelineAlign.manual,
+                            lineXY: 0.25,
+                            startChild:
+                                index == 0 ||
+                                    avaliableRoute[index].bus.id !=
+                                        avaliableRoute[index - 1].bus.id
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    child: Text(
+                                      avaliableRoute[index].bus.name,
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  )
+                                : null,
+                            endChild: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                              ),
+                              child: Text(
+                                avaliableRoute[index].busStop.name,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            indicatorStyle: IndicatorStyle(
+                              width: 15,
+                              height: 15,
+                              color: HexColor(
+                                avaliableRoute[index].bus.colorCode,
+                              ),
+                            ),
+                            beforeLineStyle: LineStyle(
+                              color: HexColor(
+                                avaliableRoute[index].bus.colorCode,
+                              ),
+                            ),
+                            isFirst: index == 0,
+                          ),
+                        ),
+                      ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
+
+class HexColor extends Color {
+  static int _getColorFromHex(String hexColor) {
+    hexColor = hexColor.toUpperCase().replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "FF$hexColor";
+    }
+    return int.parse(hexColor, radix: 16);
+  }
+
+  HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
 }
 
 class BusStopCard extends StatelessWidget {

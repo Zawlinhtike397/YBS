@@ -60,14 +60,58 @@ class AppData {
       latitude: 21.877886,
       longitude: 96.351827,
     ),
+
+    BusStop(
+      id: 13,
+      name: "သုံးတောင်",
+      latitude: 21.892834990749435,
+      longitude: 96.3585538634988,
+    ),
+    BusStop(
+      id: 14,
+      name: "ကျောက်ဖျာဒိုး",
+      latitude: 21.903940971474682,
+      longitude: 96.36229567615949,
+    ),
+    BusStop(
+      id: 15,
+      name: "ဖားအောက်တောရ",
+      latitude: 21.914771356816388,
+      longitude: 96.36558450578559,
+    ),
+    BusStop(
+      id: 16,
+      name: "ဂျင်ဂနိုင်အောက်",
+      latitude: 21.921606403595202,
+      longitude: 96.37240837185864,
+    ),
+    BusStop(
+      id: 17,
+      name: "ဂျင်ဂနိုင်ထက်",
+      latitude: 21.926915933853614,
+      longitude: 96.37756266743946,
+    ),
+    BusStop(
+      id: 18,
+      name: "ညောင်ပင်",
+      latitude: 21.93193779406747,
+      longitude: 96.3832742962214,
+    ),
+    BusStop(
+      id: 19,
+      name: "အောင်ချမ်းသာ",
+      latitude: 21.937749531346977,
+      longitude: 96.38723058952361,
+    ),
   ];
 
-  static final List<Bus> testbus = [busOne, busTwo];
+  static final List<Bus> testbus = [busOne, busTwo, bus3];
 
   static final Bus busOne = Bus(
     id: 1,
     name: "Bus One",
-    routeName: "ရွာမ - ပြင်စာ",
+    routeName: "ရွာမ ⇆ ပြင်စာ",
+    colorCode: "#DF504E",
     routeOne: [1, 2, 3, 4, 5, 6],
     routeTwo: [6, 5, 4, 3, 2, 1],
   );
@@ -75,8 +119,18 @@ class AppData {
   static final Bus busTwo = Bus(
     id: 2,
     name: "Bus Two",
-    routeName: "လွန်ကောင်း - ရတနာပုံတယ်လီပေါ့",
+    routeName: "လွန်ကောင်း ⇆ ရတနာပုံတယ်လီပေါ့",
+    colorCode: "#405CAA",
     routeOne: [7, 8, 9, 10, 3, 4, 11, 12],
     routeTwo: [12, 11, 4, 3, 10, 9, 8, 7],
+  );
+
+  static final Bus bus3 = Bus(
+    id: 3,
+    name: "Bus Three",
+    colorCode: "#DAF7A6",
+    routeName: "သုံးတောင် ⇆ အောင်ချမ်းသာ",
+    routeOne: [13, 14, 15, 16, 17, 18, 19],
+    routeTwo: [19, 18, 17, 16, 15, 14, 13],
   );
 }

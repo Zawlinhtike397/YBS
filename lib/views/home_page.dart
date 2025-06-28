@@ -8,6 +8,7 @@ import 'package:free_map/free_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus_stop.dart';
+import 'package:ybs/views/bus_line_generator.dart';
 import 'package:ybs/views/bus_list_page.dart';
 import 'package:ybs/views/bus_stop_map.dart';
 import 'package:ybs/views/map_view.dart';
@@ -218,6 +219,23 @@ class _HomePageState extends State<HomePage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => MapView(
+                              currentPosition: LatLng(
+                                userPosition!.latitude,
+                                userPosition!.longitude,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SelectionCard(
+                      icon: Image.asset("assets/images/route_history.png"),
+                      title: "Generate Bus Line",
+                      onClick: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BusLineGenerator(
                               currentPosition: LatLng(
                                 userPosition!.latitude,
                                 userPosition!.longitude,

@@ -50,115 +50,110 @@ class _LocationPickState extends State<LocationPick> {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Colors.white,
-      child: SafeArea(
-        child: Scaffold(
-          body: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              FmMap(
-                mapController: mapController,
-                mapOptions: MapOptions(
-                  initialCenter: widget.currentPosition,
-                  minZoom: 3,
-                  maxZoom: 16,
-                  initialZoom: 13,
-                  keepAlive: true,
+    return Scaffold(
+      body: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          FmMap(
+            mapController: mapController,
+            mapOptions: MapOptions(
+              initialCenter: widget.currentPosition,
+              minZoom: 3,
+              maxZoom: 16,
+              initialZoom: 13,
+              keepAlive: true,
+            ),
+            markers: markers,
+          ),
+          Positioned(
+            top: 40,
+            left: 10,
+            right: 10,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 50,
+              child: FmSearchField(
+                selectedValue: selectedData,
+                resultViewOptions: FmResultViewOptions(
+                  overlayDecoration: BoxDecoration(color: Colors.white),
+                  emptyView: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "နေရာ ရှာမတွေ့ပါ။",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                  noTextView: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "ရှာဖွေလိုသည့် နေရာရိုက်ထည့်ပါ",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
                 ),
-                markers: markers,
-              ),
-              Positioned(
-                top: 20,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: 50,
-                  child: FmSearchField(
-                    selectedValue: selectedData,
-                    resultViewOptions: FmResultViewOptions(
-                      overlayDecoration: BoxDecoration(color: Colors.white),
-                      emptyView: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "နေရာ ရှာမတွေ့ပါ။",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                textFieldBuilder: (focusNode, controller, onChanged) =>
+                    TextFormField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      style: TextStyle(fontSize: 13),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(40),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 5,
                         ),
                       ),
-                      noTextView: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "ရှာဖွေလိုသည့် နေရာရိုက်ထည့်ပါ",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
+                      onChanged: onChanged,
+                    ),
+                onSelected: (FmData? data) {
+                  if (data != null) {
+                    mapController.move(LatLng(data.lat, data.lng), 13);
+                  }
+                  setState(() {
+                    selectedData = data;
+                  });
+                },
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            child: SizedBox(
+              width: 320,
+              child: Row(
+                spacing: 10,
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: Text(
+                        selectedBusStop == null ? "" : selectedBusStop!.name,
                       ),
                     ),
-                    textFieldBuilder: (focusNode, controller, onChanged) =>
-                        TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          style: TextStyle(fontSize: 13),
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(40),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 5,
-                            ),
-                          ),
-                          onChanged: onChanged,
-                        ),
-                    onSelected: (FmData? data) {
-                      if (data != null) {
-                        mapController.move(LatLng(data.lat, data.lng), 13);
-                      }
-                      setState(() {
-                        selectedData = data;
-                      });
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context, selectedBusStop);
                     },
+                    icon: Icon(Icons.ads_click),
                   ),
-                ),
+                ],
               ),
-              Positioned(
-                bottom: 20,
-                child: SizedBox(
-                  width: 320,
-                  child: Row(
-                    spacing: 10,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          child: Text(
-                            selectedBusStop == null
-                                ? ""
-                                : selectedBusStop!.name,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context, selectedBusStop);
-                        },
-                        child: Text("ရွေးချယ်မည်"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

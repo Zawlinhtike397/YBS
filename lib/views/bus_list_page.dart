@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus.dart';
 
-class BusListPage extends StatelessWidget {
+class BusListPage extends StatefulWidget {
   const BusListPage({super.key});
 
+  @override
+  State<BusListPage> createState() => _BusListPageState();
+}
+
+class _BusListPageState extends State<BusListPage> {
+  TextEditingController controller = TextEditingController();
+  FocusNode focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,10 +25,37 @@ class BusListPage extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      body: ListView.builder(
-        itemCount: AppData.testbus.length,
-        itemBuilder: (context, index) =>
-            BusListCard(bus: AppData.testbus[index]),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color.fromARGB(255, 244, 244, 244),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 5,
+                  vertical: 5,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: const Color.fromARGB(255, 198, 198, 198),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: AppData.testbus.length,
+              itemBuilder: (context, index) =>
+                  BusListCard(bus: AppData.testbus[index]),
+            ),
+          ),
+        ],
       ),
     );
   }
