@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ybs/data/app_data.dart';
+import 'package:ybs/models/bus.dart';
 
 class BusListPage extends StatelessWidget {
   const BusListPage({super.key});
@@ -17,15 +19,17 @@ class BusListPage extends StatelessWidget {
         ),
       ),
       body: ListView.builder(
-        itemCount: 20,
-        itemBuilder: (context, index) => BusListCard(),
+        itemCount: AppData.testbus.length,
+        itemBuilder: (context, index) =>
+            BusListCard(bus: AppData.testbus[index]),
       ),
     );
   }
 }
 
 class BusListCard extends StatelessWidget {
-  const BusListCard({super.key});
+  final Bus bus;
+  const BusListCard({super.key, required this.bus});
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +51,8 @@ class BusListCard extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                SizedBox(width: double.infinity, child: Text("Bus 1")),
-                SizedBox(
-                  width: double.infinity,
-                  child: Text("ဆူးလေ - လှိုင်သာယာ"),
-                ),
+                SizedBox(width: double.infinity, child: Text(bus.name)),
+                SizedBox(width: double.infinity, child: Text(bus.routeName)),
               ],
             ),
           ),

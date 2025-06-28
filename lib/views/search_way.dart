@@ -75,6 +75,7 @@ class _SearchWayState extends State<SearchWay> {
 
     // TODO: update for more than 2 bus route or no overlap bus stop
     // Current code is only work for the overlap bus stop trip
+    // The following cade are chekcing the ways that have overlap bus stop withing two bus lines.
     List<int> sameStopIds = [];
     for (var id1 in startBus.routeOne) {
       for (var id2 in endBus.routeOne) {
@@ -83,28 +84,72 @@ class _SearchWayState extends State<SearchWay> {
         }
       }
     }
-
-    List<BusStop> finalRoute = [];
-    int lenght = 0;
-    for (var i in sameStopIds) {
-      List<BusStop> route = [];
-      route = getSameBusRoute(
-        startBus,
-        startStop,
-        AppData.testStop.firstWhere((stop) => stop.id == i),
-      );
-      if (lenght == 0 || lenght < route.length) {
-        lenght = route.length;
-        final route2 = getSameBusRoute(
-          endBus,
+    if (sameStopIds.isEmpty) {
+      List<BusStop> finalRoute = [];
+      int lenght = 0;
+      for (var i in sameStopIds) {
+        List<BusStop> route = [];
+        route = getSameBusRoute(
+          startBus,
+          startStop,
           AppData.testStop.firstWhere((stop) => stop.id == i),
-          endStop,
         );
-        route.addAll(route2);
-        finalRoute.clear();
-        finalRoute = route;
+        if (lenght == 0 || lenght < route.length) {
+          lenght = route.length;
+          final route2 = getSameBusRoute(
+            endBus,
+            AppData.testStop.firstWhere((stop) => stop.id == i),
+            endStop,
+          );
+          route.addAll(route2);
+          finalRoute.clear();
+          finalRoute = route;
+        }
+      }
+      return finalRoute;
+    }
+
+    // find the distance between bus1 bus stopes and bus2 bus stopes.
+    // the nearest distance will be the transit bus stop.
+    // This saniro will only work for two bus transit.
+    // if the route have more that one transit point, we have to think another way.
+
+    for (var id1 in startBus.routeOne) {
+      final busStop1 = AppData.testStop.firstWhere((e) => e.id == id1);
+      LatLng stopOne = LatLng(busStop1.latitude, busStop1.longitude);
+      for (var id2 in endBus.routeOne) {
+        final busStop2 = AppData.testStop.firstWhere((e) => e.id == id2);
+        LatLng stopTwo = LatLng(busStop2.latitude, busStop2.longitude);
+        busStopDistanceList.add(
+          BusStopDistance(
+            distance: Geodesy()
+                .distanceBetweenTwoGeoPoints(stopOne, stopTwo)
+                .toDouble(),
+            busStopOne: busStop1,
+            busStopTwo: busStop2,
+          ),
+        );
       }
     }
+
+    busStopDistanceList.sort((a, b) => a.distance.compareTo(b.distance));
+
+    List<BusStop> finalRoute = [];
+    final route1 = getSameBusRoute(
+      startBus,
+      startStop,
+      busStopDistanceList.first.busStopOne,
+    );
+    final route2 = getSameBusRoute(
+      endBus,
+      busStopDistanceList.first.busStopTwo,
+      endStop,
+    );
+    route1.addAll(route2);
+    finalRoute.clear();
+    finalRoute = route1;
+    busStopDistanceList.clear();
+
     return finalRoute;
   }
 
