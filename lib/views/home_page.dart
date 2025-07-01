@@ -94,7 +94,6 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
-      print(e);
       if (context.mounted) {
         setState(() {
           isLoading = false;

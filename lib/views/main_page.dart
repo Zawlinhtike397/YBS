@@ -1,0 +1,152 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:free_map/free_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:ybs/data/app_data.dart';
+import 'package:ybs/models/bus_stop.dart';
+import 'package:ybs/views/bus_list_page.dart';
+import 'package:ybs/views/route_finder.dart';
+
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  bool isLoading = false;
+
+  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+  bool positionStreamStarted = false;
+  Position? userPosition;
+  String currentLocation = "Unknow";
+  int selectedIndex = 0;
+  List<Widget> pages = [];
+
+  Future<void> loadBusStops() async {
+    final data = await rootBundle.loadString('assets/ybs_dump.json');
+    final json = jsonDecode(data);
+    for (var i in json) {
+      final stops = i["stop_list"];
+      for (var stop in stops) {
+        AppData.busStopList.add(
+          BusStop(
+            id: stop["line_no"],
+            name: stop["stop_mm"],
+            latitude: double.parse(stop["lat"]),
+            longitude: double.parse(stop["lng"]),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<Position?> getPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+    if (permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always) {
+      return await _geolocatorPlatform.getCurrentPosition(
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
+      );
+    }
+    return null;
+  }
+
+  initData(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+    });
+    await loadBusStops();
+    try {
+      userPosition = await getPosition();
+      pages = [
+        RouteFinder(
+          currentPosition: LatLng(
+            userPosition!.latitude,
+            userPosition!.longitude,
+          ),
+        ),
+        BusListPage(),
+        Scaffold(body: Center(child: Text("Notification"))),
+      ];
+      if (context.mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (context.mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initData(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return isLoading
+        ? Scaffold(
+            body: SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("assets/images/bus.png", width: 90),
+                  SizedBox(height: 20),
+                  CircularProgressIndicator(),
+                ],
+              ),
+            ),
+          )
+        : Scaffold(
+            body: pages[selectedIndex],
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: selectedIndex,
+              items: [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.bus_alert_outlined),
+                  label: "Buses",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: "Notification",
+                ),
+              ],
+              onTap: (value) {
+                setState(() {
+                  selectedIndex = value;
+                });
+              },
+            ),
+          );
+  }
+}

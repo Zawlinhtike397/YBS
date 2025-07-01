@@ -97,8 +97,9 @@ class _LocationPickState extends State<LocationPick> {
                       focusNode: focusNode,
                       style: TextStyle(fontSize: 13),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Colors.white70,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(40),
                           borderSide: BorderSide.none,
@@ -122,6 +123,34 @@ class _LocationPickState extends State<LocationPick> {
             ),
           ),
           Positioned(
+            top: 100,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 60,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white60,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(child: TextFormField()),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
             bottom: 20,
             child: SizedBox(
               width: 320,
@@ -136,14 +165,14 @@ class _LocationPickState extends State<LocationPick> {
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(40),
+                        borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
                         selectedBusStop == null ? "" : selectedBusStop!.name,
                       ),
                     ),
                   ),
-                  IconButton(
+                  IconButton.filled(
                     onPressed: () {
                       Navigator.pop(context, selectedBusStop);
                     },
