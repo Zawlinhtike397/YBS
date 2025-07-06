@@ -19,7 +19,10 @@ dependencies:
   flutter_location_search: ^2.0.0
   url_launcher: ^6.3.1
   timeline_tile: ^2.0.0
-  geodesy: ^0.10.2
+  flutter_tts: ^4.2.3
+  flutter_foreground_task: ^9.1.0
+  minimize_flutter_app: ^0.0.2
+  flutter_local_notifications: ^19.3.0
 
 dev_dependencies:
   flutter_test:

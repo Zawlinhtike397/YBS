@@ -20,7 +20,6 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   bool isLoading = false;
 
-  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   bool positionStreamStarted = false;
   Position? userPosition;
   String currentLocation = "Unknow";
@@ -66,8 +65,14 @@ class _MainPageState extends State<MainPage> {
     }
     if (permission == LocationPermission.whileInUse ||
         permission == LocationPermission.always) {
-      return await _geolocatorPlatform.getCurrentPosition(
-        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
+      return await AppData.geolocatorPlatform.getCurrentPosition(
+        locationSettings: AndroidSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          foregroundNotificationConfig: ForegroundNotificationConfig(
+            notificationTitle: "notificationTitle",
+            notificationText: "notificationText",
+          ),
+        ),
       );
     }
     return null;

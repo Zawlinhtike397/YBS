@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_map/free_map.dart';
-import 'package:geodesy/geodesy.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:ybs/controllers/hex_color.dart';
 import 'package:ybs/data/app_data.dart';
@@ -130,15 +130,16 @@ class _SearchWayState extends State<SearchWay> {
 
     for (var id1 in startBus.routeOne) {
       final busStop1 = AppData.testStop.firstWhere((e) => e.id == id1);
-      LatLng stopOne = LatLng(busStop1.latitude, busStop1.longitude);
       for (var id2 in endBus.routeOne) {
         final busStop2 = AppData.testStop.firstWhere((e) => e.id == id2);
-        LatLng stopTwo = LatLng(busStop2.latitude, busStop2.longitude);
         busStopDistanceList.add(
           BusStopDistance(
-            distance: Geodesy()
-                .distanceBetweenTwoGeoPoints(stopOne, stopTwo)
-                .toDouble(),
+            distance: Geolocator.distanceBetween(
+              busStop1.latitude,
+              busStop1.longitude,
+              busStop2.latitude,
+              busStop2.longitude,
+            ),
             busStopOne: busStop1,
             busStopTwo: busStop2,
           ),

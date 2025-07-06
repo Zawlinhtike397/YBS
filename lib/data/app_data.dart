@@ -1,7 +1,19 @@
+import 'dart:async';
+
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:ybs/models/bus.dart';
 import 'package:ybs/models/bus_stop.dart';
 
 class AppData {
+  static final GeolocatorPlatform geolocatorPlatform =
+      GeolocatorPlatform.instance;
+  static StreamSubscription<Position>? positionStreamSubscription;
+
+  static int currentBusIndex = -1;
+  static bool isTracking = false;
+
+  static FlutterTts flutterTts = FlutterTts();
   static List<BusStop> busStopList = [];
   static List<List<BusStop>> routeList = [];
   static List<Bus> busList = [];

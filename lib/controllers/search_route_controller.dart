@@ -1,5 +1,4 @@
-import 'package:free_map/free_map.dart';
-import 'package:geodesy/geodesy.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus.dart';
 import 'package:ybs/models/bus_stop.dart';
@@ -73,6 +72,8 @@ class SearchRouteController {
       (bus) => bus.routeOne.contains(endStop.id),
     );
 
+    if (startBus == endBus) return [];
+
     // TODO: update for more than 2 bus route or no overlap bus stop
     // Current code is only work for the overlap bus stop trip
     // The following cade are chekcing the ways that have overlap bus stop withing two bus lines.
@@ -84,6 +85,7 @@ class SearchRouteController {
         }
       }
     }
+
     if (sameStopIds.isNotEmpty) {
       List<RouteData> finalRoute = [];
       int lenght = 0;
@@ -107,6 +109,10 @@ class SearchRouteController {
           finalRoute = route;
         }
       }
+      if (finalRoute.last.busStop ==
+          finalRoute[finalRoute.length - 2].busStop) {
+        finalRoute.clear();
+      }
       return finalRoute;
     }
 
@@ -117,15 +123,16 @@ class SearchRouteController {
 
     for (var id1 in startBus.routeOne) {
       final busStop1 = AppData.testStop.firstWhere((e) => e.id == id1);
-      LatLng stopOne = LatLng(busStop1.latitude, busStop1.longitude);
       for (var id2 in endBus.routeOne) {
         final busStop2 = AppData.testStop.firstWhere((e) => e.id == id2);
-        LatLng stopTwo = LatLng(busStop2.latitude, busStop2.longitude);
         busStopDistanceList.add(
           BusStopDistance(
-            distance: Geodesy()
-                .distanceBetweenTwoGeoPoints(stopOne, stopTwo)
-                .toDouble(),
+            distance: Geolocator.distanceBetween(
+              busStop1.latitude,
+              busStop1.longitude,
+              busStop2.latitude,
+              busStop2.longitude,
+            ),
             busStopOne: busStop1,
             busStopTwo: busStop2,
           ),
@@ -150,22 +157,50 @@ class SearchRouteController {
     finalRoute.clear();
     finalRoute = route1;
     busStopDistanceList.clear();
-
     return finalRoute;
   }
 
-  List<RouteData> searchRoute(BusStop startStop, BusStop endStop) {
+  bool checkSame(List<RouteData> r1, List<RouteData> r2) {
+    if (r1.length != r2.length) return false;
+    int length = r1.length;
+    for (int i = 0; i < length; i++) {
+      if (r1[i].bus != r2[i].bus || r1[i].busStop != r2[i].busStop) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  List<List<RouteData>> searchRoute(BusStop startStop, BusStop endStop) {
+    List<List<RouteData>> allRoutes = [];
     avaliableRoute.clear();
     startPointArrivalBusList.clear();
     endPointArrivalBusList.clear();
+    allRoutes.clear();
 
     for (var bus in AppData.testbus) {
       if (bus.routeOne.contains(startStop.id) &&
           bus.routeOne.contains(endStop.id)) {
-        return getSameBusRoute(bus, startStop, endStop);
+        List<RouteData> route = getSameBusRoute(bus, startStop, endStop);
+        allRoutes.add(route);
+      } else {
+        List<RouteData> route = getRoute(startStop, endStop);
+        if (route.isNotEmpty) {
+          if (allRoutes.isEmpty) {
+            allRoutes.add(route);
+          } else {
+            bool hasSame = false;
+            for (var r in allRoutes) {
+              hasSame = checkSame(r, route);
+              if (hasSame) break;
+            }
+            if (!hasSame) {
+              allRoutes.add(route);
+            }
+          }
+        }
       }
     }
-
-    return getRoute(startStop, endStop);
+    return allRoutes;
   }
 }
