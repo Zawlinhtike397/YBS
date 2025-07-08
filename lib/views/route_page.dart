@@ -1,17 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:blinking_text/blinking_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:minimize_flutter_app/minimize_flutter_app.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 import 'package:ybs/controllers/hex_color.dart';
-import 'package:ybs/controllers/noti_controller.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/main.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/models/route_data.dart';
+import 'package:ybs/views/components/bus_card.dart';
+
+enum CurrentStage { wayToBusStop, onBus, transit, arrive }
 
 class RoutePage extends StatefulWidget {
   final List<RouteData> route;
@@ -25,10 +28,12 @@ class _RoutePageState extends State<RoutePage> {
   BusStop? currentStop;
   BusStop? nextStop;
   int currentIndex = 0;
-  String currentLocation = "";
+  String currentLocation = "You are not currently tracking!!";
   bool isTracking = false;
   bool locationEnable = false;
   bool notiShown = false;
+  CurrentStage currentStage = CurrentStage.wayToBusStop;
+  String stageImage = "assets/images/navigation.gif";
 
   showNoti() {
     notiShown = true;
@@ -112,7 +117,7 @@ class _RoutePageState extends State<RoutePage> {
     });
   }
 
-  checkLocation(double lat, double lon) {
+  void checkLocation(double lat, double lon) {
     final distance = Geolocator.distanceBetween(
       lat,
       lon,
@@ -121,19 +126,23 @@ class _RoutePageState extends State<RoutePage> {
     );
     if (distance < 30 && distance > 10) {
       currentLocation = widget.route[currentIndex].busStop.name;
+      stageImage = "assets/images/bus_stop.gif";
       if (currentIndex < widget.route.length - 1 &&
           widget.route[currentIndex].busStop.id ==
               widget.route[currentIndex + 1].busStop.id) {
         currentIndex = currentIndex + 1;
         currentLocation =
             "$currentLocation\nTransit bus stop!! Take off and transfer to ${widget.route[currentIndex].bus.name}";
+        stageImage = "assets/images/bus_stop.gif";
       } else if (currentIndex < widget.route.length - 1 &&
           widget.route[currentIndex].bus.id !=
               widget.route[currentIndex + 1].bus.id) {
         currentLocation =
             "Take off at this bus stop!!\nWalk to ${widget.route[currentIndex + 1].busStop.name} and take ${widget.route[currentIndex + 1].bus.name}";
       }
-      setState(() {});
+      if (context.mounted) {
+        setState(() {});
+      }
       if (notiShown == false) {
         AppData.flutterTts.speak(currentLocation);
         showNoti();
@@ -143,13 +152,24 @@ class _RoutePageState extends State<RoutePage> {
         currentIndex = currentIndex + 1;
       } else {
         currentLocation = "You are arrived to your destination";
+        stageImage = "assets/images/bus_stop.png";
         if (notiShown == false) {
           AppData.flutterTts.speak(currentLocation);
+          _stopService();
+          AppData.positionStreamSubscription?.cancel();
           showNoti();
         }
       }
+      if (context.mounted) {
+        setState(() {});
+      }
     } else {
       notiShown = false;
+      if (currentIndex == 0) {
+        stageImage = "assets/images/walking.gif";
+      } else {
+        stageImage = "assets/images/way_to.gif";
+      }
       currentLocation = "Way to ${widget.route[currentIndex].busStop.name}";
       if (context.mounted) {
         setState(() {});
@@ -269,22 +289,53 @@ class _RoutePageState extends State<RoutePage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("Route Page")),
         body: Column(
           children: [
-            Text("Current Location"),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(120),
+                    child: Image.asset(stageImage, height: 120),
+                  ),
+                  SizedBox(
+                    width: 320,
+                    height: 60,
+                    child: Center(
+                      child: BlinkText(
+                        currentLocation,
+                        duration: Duration(seconds: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Container(
               width: double.infinity,
-              height: 60,
+              padding: EdgeInsets.all(10),
               margin: EdgeInsets.symmetric(horizontal: 10),
-              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 238, 238, 238),
+                color: const Color.fromARGB(255, 245, 245, 245),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: Text(currentLocation),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 10,
+                children: [
+                  Text(widget.route.first.busStop.name),
+                  Icon(
+                    Icons.directions_bus,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  Text(widget.route.last.busStop.name),
+                ],
+              ),
             ),
+
             Expanded(
+              flex: 2,
               child: ListView.builder(
                 itemCount: widget.route.length,
                 itemBuilder: (context, index) => SizedBox(
@@ -296,12 +347,9 @@ class _RoutePageState extends State<RoutePage> {
                         index == 0 ||
                             widget.route[index].bus.id !=
                                 widget.route[index - 1].bus.id
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Text(
-                              widget.route[index].bus.name,
-                              textAlign: TextAlign.right,
-                            ),
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [BusCard(bus: widget.route[index].bus)],
                           )
                         : null,
                     endChild: Padding(
@@ -329,28 +377,27 @@ class _RoutePageState extends State<RoutePage> {
             ),
           ],
         ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: isTracking
-              ? Image.asset(
-                  "assets/images/moving_bus.gif",
-                  height: 120,
-                  width: 320,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                )
-              : SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: MaterialButton(
-                    color: Theme.of(context).colorScheme.primary,
-                    onPressed: () {
-                      liveTrack(context);
-                    },
-                    child: Text("LIVE TRACK"),
-                  ),
-                ),
-        ),
+        floatingActionButton: isTracking
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  setState(() {
+                    isTracking = false;
+                    currentLocation = "You are not currently tracking!!";
+                    stageImage = "assets/images/navigation.gif";
+                    _stopService();
+                    AppData.positionStreamSubscription?.cancel();
+                  });
+                },
+                icon: Icon(Icons.stop),
+                label: Text("Stop tracking"),
+              )
+            : FloatingActionButton.extended(
+                onPressed: () {
+                  liveTrack(context);
+                },
+                icon: Icon(Icons.my_location),
+                label: Text("Start Tracking"),
+              ),
       ),
     );
   }

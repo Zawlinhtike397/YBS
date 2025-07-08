@@ -65,45 +65,93 @@ class _RouteFinderState extends State<RouteFinder> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        i.nearPlaces,
-                        style: TextStyle(fontSize: 12),
-                        textAlign: TextAlign.center,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          i.nearPlaces,
+                          style: TextStyle(fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            selectedStartBusStop = i;
-                            start = i.name;
-                            Navigator.pop(context);
-                          },
-                          icon: Row(
-                            children: [
-                              Icon(Icons.location_on, color: Colors.red),
-                              Text("စမှတ်တိုင်"),
-                            ],
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                        bottom: 20,
+                      ),
+                      child: Row(
+                        spacing: 3,
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                selectedStartBusStop = i;
+                                start = i.name;
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    241,
+                                    241,
+                                    241,
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    bottomLeft: Radius.circular(20),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  spacing: 10,
+                                  children: [
+                                    Icon(Icons.location_on, color: Colors.red),
+                                    Text("စမှတ်တိုင်"),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            selectedEndBusStop = i;
-                            end = i.name;
-                            Navigator.pop(context);
-                          },
-                          icon: Row(
-                            children: [
-                              Icon(Icons.location_on, color: Colors.blue),
-                              Text("ဆုံးမှတ်တိုင်"),
-                            ],
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                selectedEndBusStop = i;
+                                end = i.name;
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    241,
+                                    241,
+                                    241,
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(20),
+                                    bottomRight: Radius.circular(20),
+                                  ),
+                                ),
+                                child: Row(
+                                  spacing: 10,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.location_on, color: Colors.blue),
+                                    Text("ဆုံးမှတ်တိုင်"),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -411,7 +459,8 @@ class AvaliableRouteWidget extends StatelessWidget {
         );
       },
       child: Container(
-        padding: EdgeInsets.all(5),
+        margin: EdgeInsets.only(bottom: 3),
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
         decoration: BoxDecoration(
           color: const Color.fromARGB(255, 241, 241, 241),
           borderRadius: BorderRadius.circular(5),

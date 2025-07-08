@@ -138,7 +138,7 @@ class _MainPageState extends State<MainPage> {
               items: [
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.bus_alert_outlined),
+                  icon: Icon(Icons.directions_bus),
                   label: "Buses",
                 ),
                 BottomNavigationBarItem(
