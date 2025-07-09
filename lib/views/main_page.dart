@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/views/bus_list_page.dart';
+import 'package:ybs/views/notification_page.dart';
 import 'package:ybs/views/route_finder.dart';
 
 class MainPage extends StatefulWidget {
@@ -93,7 +94,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         BusListPage(),
-        Scaffold(body: Center(child: Text("Notification"))),
+        NotificationPage(),
       ];
       if (context.mounted) {
         setState(() {
@@ -124,8 +125,8 @@ class _MainPageState extends State<MainPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset("assets/images/bus.png", width: 90),
-                  SizedBox(height: 20),
+                  Image.asset("assets/icons/icon.png", width: 90),
+                  SizedBox(height: 40),
                   CircularProgressIndicator(),
                 ],
               ),

@@ -44,15 +44,27 @@ class _RouteFinderState extends State<RouteFinder> {
                     SizedBox(height: 20),
                     Container(
                       width: double.infinity,
-                      margin: EdgeInsets.all(10),
-                      alignment: Alignment.center,
-                      child: Text(
-                        i.name,
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+
+                      child: Row(
+                        spacing: 10,
+                        children: [
+                          Image.asset(
+                            "assets/images/bus_stop_1.png",
+                            width: 24,
+                          ),
+                          Text(
+                            i.name,
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Padding(
@@ -67,7 +79,7 @@ class _RouteFinderState extends State<RouteFinder> {
                     ),
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(5),
+                        padding: EdgeInsets.all(10),
                         child: Text(
                           i.nearPlaces,
                           style: TextStyle(fontSize: 12),
@@ -76,83 +88,64 @@ class _RouteFinderState extends State<RouteFinder> {
                       ),
                     ),
                     SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 10,
-                        right: 10,
-                        top: 10,
-                        bottom: 20,
-                      ),
-                      child: Row(
-                        spacing: 3,
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                selectedStartBusStop = i;
-                                start = i.name;
-                                Navigator.pop(context);
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    241,
-                                    241,
-                                    241,
-                                  ),
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    bottomLeft: Radius.circular(20),
-                                  ),
+                    Row(
+                      spacing: 5,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              selectedStartBusStop = i;
+                              start = i.name;
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(10),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 235, 235, 235),
+                                borderRadius: BorderRadius.horizontal(
+                                  left: Radius.circular(40),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  spacing: 10,
-                                  children: [
-                                    Icon(Icons.location_on, color: Colors.red),
-                                    Text("စမှတ်တိုင်"),
-                                  ],
-                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.location_on, color: Colors.red),
+                                  Text("စမှတ်တိုင်"),
+                                ],
                               ),
                             ),
                           ),
-                          Expanded(
+                        ),
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 235, 235, 235),
+                              borderRadius: BorderRadius.horizontal(
+                                right: Radius.circular(40),
+                              ),
+                            ),
                             child: GestureDetector(
                               onTap: () {
                                 selectedEndBusStop = i;
                                 end = i.name;
                                 Navigator.pop(context);
                               },
-                              child: Container(
-                                padding: EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    241,
-                                    241,
-                                    241,
-                                  ),
-                                  borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(20),
-                                    bottomRight: Radius.circular(20),
-                                  ),
-                                ),
-                                child: Row(
-                                  spacing: 10,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.location_on, color: Colors.blue),
-                                    Text("ဆုံးမှတ်တိုင်"),
-                                  ],
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.location_on, color: Colors.blue),
+                                  Text("ဆုံးမှတ်တိုင်"),
+                                ],
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                    SizedBox(height: 10),
                   ],
                 ),
               ).then((value) {
@@ -210,21 +203,40 @@ class _RouteFinderState extends State<RouteFinder> {
             top: 40,
             left: 5,
             right: 5,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.location_on, color: Colors.red),
-                  Text(
-                    start == "" ? "စမှတ်တိုင်" : start,
-                    style: TextStyle(color: Colors.grey),
+            child: GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => BusStopSearch(
+                    onSelect: (selectedStop) {
+                      selectedStartBusStop = selectedStop;
+                      setState(() {
+                        start = selectedStop.name;
+                      });
+                      Navigator.pop(context);
+                    },
                   ),
-                ],
+                );
+              },
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  spacing: 5,
+                  children: [
+                    Icon(Icons.location_on, color: Colors.red),
+                    Text(
+                      start == "" ? "စမှတ်တိုင်" : start,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -232,22 +244,40 @@ class _RouteFinderState extends State<RouteFinder> {
             top: 100,
             left: 5,
             right: 5,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                spacing: 5,
-                children: [
-                  Icon(Icons.location_on, color: Colors.blue),
-                  Text(
-                    end == "" ? "ဆုံးမှတ်တိုင်" : end,
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+            child: GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => BusStopSearch(
+                    onSelect: (selectedStop) {
+                      selectedEndBusStop = selectedStop;
+                      setState(() {
+                        end = selectedStop.name;
+                      });
+                      Navigator.pop(context);
+                    },
                   ),
-                ],
+                );
+              },
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  spacing: 5,
+                  children: [
+                    Icon(Icons.location_on, color: Colors.blue),
+                    Text(
+                      end == "" ? "ဆုံးမှတ်တိုင်" : end,
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -307,21 +337,6 @@ class _RouteFinderState extends State<RouteFinder> {
                     backgroundColor: WidgetStatePropertyAll(Colors.white),
                   ),
                   onPressed: () async {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => SizedBox(
-                        width: double.infinity,
-                        child: Column(children: [Text("Search")]),
-                      ),
-                    );
-                  },
-                  icon: Icon(Icons.search, color: Colors.grey),
-                ),
-                IconButton.filled(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.white),
-                  ),
-                  onPressed: () async {
                     LocationData? locationData = await LocationSearch.show(
                       context: context,
                       userAgent: UserAgent(
@@ -359,6 +374,176 @@ class _RouteFinderState extends State<RouteFinder> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class BusStopSearch extends StatefulWidget {
+  final Function(BusStop selectedStop) onSelect;
+  const BusStopSearch({super.key, required this.onSelect});
+
+  @override
+  State<BusStopSearch> createState() => _BusStopSearchState();
+}
+
+class _BusStopSearchState extends State<BusStopSearch> {
+  List<BusStop> busStopList = AppData.testStop;
+  TextEditingController controller = TextEditingController();
+  FocusNode focusNode = FocusNode();
+
+  filterStop(String filterText) {
+    setState(() {
+      busStopList = AppData.testStop
+          .where(
+            (e) =>
+                e.name.contains(filterText) ||
+                e.nearPlaces.contains(filterText) ||
+                e.township.contains(filterText),
+          )
+          .toList();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.5,
+      maxChildSize: 0.8,
+      minChildSize: 0.2,
+      shouldCloseOnMinExtent: true,
+      builder: (context, scrollController) => Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 20),
+            Text(
+              "မှတ်တိုင်ရွေးချယ်ပါ",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                controller: controller,
+                focusNode: focusNode,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color.fromARGB(255, 243, 243, 243),
+                  labelText: "မှတ်တိုင်အမည်၊ နေရာဖြင့် ရှာပါ",
+                  labelStyle: TextStyle(fontSize: 12, color: Colors.grey),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey),
+                  suffixIcon: controller.text != ""
+                      ? IconButton(
+                          onPressed: () {
+                            controller.text = "";
+                            filterStop("");
+                            focusNode.unfocus();
+                          },
+                          icon: Icon(Icons.cancel, color: Colors.grey),
+                        )
+                      : null,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 5,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onChanged: (value) {
+                  filterStop(value);
+                },
+                onTapOutside: (event) {
+                  focusNode.unfocus();
+                },
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              margin: EdgeInsets.only(bottom: 5),
+              width: double.infinity,
+              child: Text(
+                "မှတ်တိုင်များ",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            Expanded(
+              child: busStopList.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text("မှတ်တိုင် မတွေ့ရှိပါ။")],
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      itemCount: busStopList.length,
+                      itemBuilder: (context, index) => GestureDetector(
+                        onTap: () {
+                          widget.onSelect.call(busStopList[index]);
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(left: 5, right: 5, bottom: 5),
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 216, 238, 255),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Text(
+                                        busStopList[index].name,
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Text(
+                                        busStopList[index].nearPlaces,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.location_on),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

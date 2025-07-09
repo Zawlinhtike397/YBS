@@ -46,7 +46,7 @@ class _BusListPageState extends State<BusListPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text("Bus List"),
-        titleSpacing: 0,
+        titleSpacing: 10,
         titleTextStyle: TextStyle(
           color: Colors.black,
           fontSize: 18,
@@ -101,6 +101,8 @@ class _BusListPageState extends State<BusListPage> {
                 bus: buses[index],
                 onTap: () {
                   showModalBottomSheet(
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
                     context: context,
                     builder: (context) => BusDetail(bus: buses[index]),
                   );
@@ -120,66 +122,133 @@ class BusDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text("data"),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: bus.routeOne.length,
-                  itemBuilder: (context, index) => Container(
-                    height: 60,
-                    padding: EdgeInsets.only(left: 10),
-                    child: TimelineTile(
-                      alignment: TimelineAlign.end,
-                      isFirst: index == 0,
-                      isLast: index == bus.routeOne.length - 1,
-                      startChild: Padding(
-                        padding: EdgeInsets.only(right: 5),
-                        child: Text(
-                          getBusStopName(bus.routeOne[index]),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      indicatorStyle: IndicatorStyle(
-                        width: 15,
-                        height: 15,
-                        color: HexColor(bus.colorCode),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 50),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: bus.routeTwo.length,
-                  itemBuilder: (context, index) => Container(
-                    height: 60,
-                    padding: EdgeInsets.only(left: 10),
-                    child: TimelineTile(
-                      alignment: TimelineAlign.start,
-                      isFirst: index == 0,
-                      isLast: index == bus.routeTwo.length - 1,
-                      endChild: Padding(
-                        padding: EdgeInsets.only(left: 5),
-                        child: Text(getBusStopName(bus.routeTwo[index])),
-                      ),
-                      indicatorStyle: IndicatorStyle(
-                        width: 15,
-                        height: 15,
-                        color: HexColor(bus.colorCode),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+    return DraggableScrollableSheet(
+      initialChildSize: 0.5,
+      minChildSize: 0.2,
+      maxChildSize: 0.8,
+      expand: true,
+      shouldCloseOnMinExtent: true,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
         ),
-      ],
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              margin: EdgeInsets.only(top: 20),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 238, 238, 238),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 5,
+                children: [Icon(Icons.directions_bus_rounded), Text(bus.name)],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Text(bus.routeName, style: TextStyle(color: Colors.grey)),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                controller: scrollController,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: bus.routeOne.length,
+                        itemBuilder: (context, index) => Container(
+                          height: 60,
+                          padding: EdgeInsets.only(left: 10),
+                          child: TimelineTile(
+                            alignment: TimelineAlign.end,
+                            isFirst: index == 0,
+                            isLast: index == bus.routeOne.length - 1,
+                            startChild: Padding(
+                              padding: EdgeInsets.only(right: 5),
+                              child: Text(
+                                getBusStopName(bus.routeOne[index]),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            indicatorStyle: IndicatorStyle(
+                              width: 20,
+                              height: 20,
+                              indicator: Image.asset(
+                                "assets/images/start_bus_stop.png",
+                              ),
+                            ),
+                            beforeLineStyle: LineStyle(
+                              thickness: 3,
+                              color: Colors.red,
+                            ),
+                            afterLineStyle: LineStyle(
+                              thickness: 3,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 50),
+                    Expanded(
+                      child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: bus.routeTwo.length,
+                        itemBuilder: (context, index) => Container(
+                          height: 60,
+                          padding: EdgeInsets.only(left: 10),
+                          child: TimelineTile(
+                            alignment: TimelineAlign.start,
+                            isFirst: index == 0,
+                            isLast: index == bus.routeTwo.length - 1,
+                            endChild: Padding(
+                              padding: EdgeInsets.only(left: 5),
+                              child: Text(
+                                getBusStopName(bus.routeTwo[index]),
+                                style: TextStyle(fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            indicatorStyle: IndicatorStyle(
+                              width: 20,
+                              height: 20,
+                              indicator: Image.asset(
+                                "assets/images/start_bus_stop.png",
+                              ),
+                            ),
+                            afterLineStyle: LineStyle(
+                              thickness: 3,
+                              color: Colors.blue,
+                            ),
+                            beforeLineStyle: LineStyle(
+                              thickness: 3,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -216,13 +285,8 @@ class BusListCard extends StatelessWidget {
             Container(
               width: 60,
               height: 60,
-              decoration: BoxDecoration(
-                color: HexColor(bus.colorCode),
-                image: DecorationImage(
-                  image: AssetImage("assets/images/bus_2.png"),
-                  scale: 15,
-                ),
-              ),
+              decoration: BoxDecoration(color: HexColor(bus.colorCode)),
+              child: Icon(Icons.directions_bus, size: 40, color: Colors.white),
             ),
             Expanded(
               child: Column(

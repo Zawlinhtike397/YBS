@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:ybs/models/bus.dart';
 import 'package:ybs/models/bus_stop.dart';
+import 'package:ybs/models/message.dart';
 
 class AppData {
   static final GeolocatorPlatform geolocatorPlatform =
@@ -145,4 +146,56 @@ class AppData {
     routeOne: [13, 14, 15, 16, 17, 18, 19],
     routeTwo: [19, 18, 17, 16, 15, 14, 13],
   );
+
+  static List<Message> testMessages = [
+    Message(
+      id: 1,
+      dateTime: DateTime.now(),
+      title:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna.",
+      text:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna. Suspendisse ac semper ipsum. Etiam vel ullamcorper nulla. Cras condimentum lacus eget sodales pulvinar. Donec sit amet ipsum nec velit viverra feugiat. Nam a efficitur est. Phasellus justo justo, rhoncus ac scelerisque ut, consectetur sit amet urna. Sed lobortis lacus est, in elementum est efficitur eget. Curabitur non nunc non ipsum ornare hendrerit. Nunc lectus velit, viverra sit amet sapien sed, luctus tristique enim. Sed molestie, quam at rutrum pulvinar, nisi mi fermentum enim, sit amet rutrum eros sapien vel neque. Nam eleifend sem at eros gravida bibendum. Vivamus ex magna, pharetra dictum convallis sed, ultricies sit amet ipsum. Vestibulum eros sapien, congue et urna nec, viverra cursus eros. Praesent quis convallis eros. Morbi malesuada metus eget quam tincidunt ultricies. Integer ornare neque at orci vehicula, sed tristique est vulputate. Aliquam ultrices facilisis auctor. Fusce id arcu ante. Fusce pulvinar et massa id suscipit. Praesent nec mi quis leo cursus viverra ac id justo.",
+      category: "Trip/Journy",
+    ),
+    Message(
+      id: 2,
+      dateTime: DateTime.now(),
+      title:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna.",
+      text:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna. Suspendisse ac semper ipsum. Etiam vel ullamcorper nulla. Cras condimentum lacus eget sodales pulvinar. Donec sit amet ipsum nec velit viverra feugiat. Nam a efficitur est. Phasellus justo justo, rhoncus ac scelerisque ut, consectetur sit amet urna. Sed lobortis lacus est, in elementum est efficitur eget. Curabitur non nunc non ipsum ornare hendrerit. Nunc lectus velit, viverra sit amet sapien sed, luctus tristique enim. Sed molestie, quam at rutrum pulvinar, nisi mi fermentum enim, sit amet rutrum eros sapien vel neque. Nam eleifend sem at eros gravida bibendum. Vivamus ex magna, pharetra dictum convallis sed, ultricies sit amet ipsum. Vestibulum eros sapien, congue et urna nec, viverra cursus eros. Praesent quis convallis eros. Morbi malesuada metus eget quam tincidunt ultricies. Integer ornare neque at orci vehicula, sed tristique est vulputate. Aliquam ultrices facilisis auctor. Fusce id arcu ante. Fusce pulvinar et massa id suscipit. Praesent nec mi quis leo cursus viverra ac id justo.",
+
+      category: "Trip/Journy",
+    ),
+    Message(
+      id: 3,
+      dateTime: DateTime.now(),
+      title:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna.",
+      text:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna. Suspendisse ac semper ipsum. Etiam vel ullamcorper nulla. Cras condimentum lacus eget sodales pulvinar. Donec sit amet ipsum nec velit viverra feugiat. Nam a efficitur est. Phasellus justo justo, rhoncus ac scelerisque ut, consectetur sit amet urna. Sed lobortis lacus est, in elementum est efficitur eget. Curabitur non nunc non ipsum ornare hendrerit. Nunc lectus velit, viverra sit amet sapien sed, luctus tristique enim. Sed molestie, quam at rutrum pulvinar, nisi mi fermentum enim, sit amet rutrum eros sapien vel neque. Nam eleifend sem at eros gravida bibendum. Vivamus ex magna, pharetra dictum convallis sed, ultricies sit amet ipsum. Vestibulum eros sapien, congue et urna nec, viverra cursus eros. Praesent quis convallis eros. Morbi malesuada metus eget quam tincidunt ultricies. Integer ornare neque at orci vehicula, sed tristique est vulputate. Aliquam ultrices facilisis auctor. Fusce id arcu ante. Fusce pulvinar et massa id suscipit. Praesent nec mi quis leo cursus viverra ac id justo.",
+
+      category: "System",
+    ),
+    Message(
+      id: 4,
+      dateTime: DateTime.now(),
+      title:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna.",
+      text:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna. Suspendisse ac semper ipsum. Etiam vel ullamcorper nulla. Cras condimentum lacus eget sodales pulvinar. Donec sit amet ipsum nec velit viverra feugiat. Nam a efficitur est. Phasellus justo justo, rhoncus ac scelerisque ut, consectetur sit amet urna. Sed lobortis lacus est, in elementum est efficitur eget. Curabitur non nunc non ipsum ornare hendrerit. Nunc lectus velit, viverra sit amet sapien sed, luctus tristique enim. Sed molestie, quam at rutrum pulvinar, nisi mi fermentum enim, sit amet rutrum eros sapien vel neque. Nam eleifend sem at eros gravida bibendum. Vivamus ex magna, pharetra dictum convallis sed, ultricies sit amet ipsum. Vestibulum eros sapien, congue et urna nec, viverra cursus eros. Praesent quis convallis eros. Morbi malesuada metus eget quam tincidunt ultricies. Integer ornare neque at orci vehicula, sed tristique est vulputate. Aliquam ultrices facilisis auctor. Fusce id arcu ante. Fusce pulvinar et massa id suscipit. Praesent nec mi quis leo cursus viverra ac id justo.",
+
+      category: "Service",
+    ),
+    Message(
+      id: 5,
+      dateTime: DateTime.now(),
+      title:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna.",
+      text:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non finibus urna. Suspendisse ac semper ipsum. Etiam vel ullamcorper nulla. Cras condimentum lacus eget sodales pulvinar. Donec sit amet ipsum nec velit viverra feugiat. Nam a efficitur est. Phasellus justo justo, rhoncus ac scelerisque ut, consectetur sit amet urna. Sed lobortis lacus est, in elementum est efficitur eget. Curabitur non nunc non ipsum ornare hendrerit. Nunc lectus velit, viverra sit amet sapien sed, luctus tristique enim. Sed molestie, quam at rutrum pulvinar, nisi mi fermentum enim, sit amet rutrum eros sapien vel neque. Nam eleifend sem at eros gravida bibendum. Vivamus ex magna, pharetra dictum convallis sed, ultricies sit amet ipsum. Vestibulum eros sapien, congue et urna nec, viverra cursus eros. Praesent quis convallis eros. Morbi malesuada metus eget quam tincidunt ultricies. Integer ornare neque at orci vehicula, sed tristique est vulputate. Aliquam ultrices facilisis auctor. Fusce id arcu ante. Fusce pulvinar et massa id suscipit. Praesent nec mi quis leo cursus viverra ac id justo.",
+
+      category: "Trip/Journy",
+    ),
+  ];
 }
