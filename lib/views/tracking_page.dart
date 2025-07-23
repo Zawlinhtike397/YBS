@@ -433,8 +433,6 @@ class _TrackingWidgetState extends State<TrackingWidget> {
     return false;
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -459,18 +457,41 @@ class _TrackingWidgetState extends State<TrackingWidget> {
               mainAxisAlignment: MainAxisAlignment.center,
               spacing: 10,
               children: [
-                Container(
-                  padding: EdgeInsets.only(right: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.directions_bus, color: Colors.white),
-                      Text("Track", style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
+                Column(
+                  children: widget.route
+                      .map((r) => r.bus)
+                      .toSet()
+                      .map(
+                        (bus) => Container(
+                          margin: EdgeInsets.only(bottom: 8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.directions_bus,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                bus.name,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
                 Expanded(
                   child: Column(
