@@ -88,7 +88,7 @@ class _MainPageState extends State<MainPage> {
       userPosition = await getPosition();
       pages = [
         RouteFinder(
-          currentPosition: LatLng(
+          userPosition: LatLng(
             userPosition!.latitude,
             userPosition!.longitude,
           ),
@@ -134,24 +134,38 @@ class _MainPageState extends State<MainPage> {
           )
         : Scaffold(
             body: pages[selectedIndex],
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: selectedIndex,
-              items: [
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.directions_bus),
-                  label: "Buses",
+            bottomNavigationBar: NavigationBarTheme(
+              data: NavigationBarThemeData(
+                surfaceTintColor: Colors.transparent,
+                indicatorColor: Color(0xFFFFD32C),
+                backgroundColor: Color(0xFFF3EDF7),
+
+                iconTheme: WidgetStatePropertyAll(
+                  IconThemeData(color: Colors.black),
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications),
-                  label: "Notification",
-                ),
-              ],
-              onTap: (value) {
-                setState(() {
-                  selectedIndex = value;
-                });
-              },
+              ),
+              child: NavigationBar(
+                destinations: [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined, size: 28),
+                    label: 'Home',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.directions_bus_outlined, size: 28),
+                    label: "YBS Guide",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.notifications_outlined, size: 28),
+                    label: "Notification",
+                  ),
+                ],
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (int index) {
+                  setState(() {
+                    selectedIndex = index;
+                  });
+                },
+              ),
             ),
           );
   }

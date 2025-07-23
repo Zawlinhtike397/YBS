@@ -44,9 +44,13 @@ class _BusListPageState extends State<BusListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text("Bus List"),
+        title: Text("YBS Guide"),
         titleSpacing: 10,
+        centerTitle: true,
+        elevation: 6.0,
+        shadowColor: Colors.black.withValues(alpha: 0.5),
+        backgroundColor: const Color.fromARGB(255, 243, 242, 242),
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(
           color: Colors.black,
           fontSize: 18,
@@ -54,9 +58,21 @@ class _BusListPageState extends State<BusListPage> {
         ),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(left: 12, top: 20),
+            child: Text(
+              'Find bus information by',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 10.0,
+            ),
             child: TextFormField(
               controller: controller,
               focusNode: focusNode,
@@ -65,7 +81,7 @@ class _BusListPageState extends State<BusListPage> {
                 fillColor: const Color.fromARGB(255, 244, 244, 244),
                 border: OutlineInputBorder(
                   borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(40),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: 5,
@@ -85,6 +101,7 @@ class _BusListPageState extends State<BusListPage> {
                         icon: Icon(Icons.close),
                       )
                     : null,
+                hintText: "Enter the Bus number, Street, Place",
               ),
               onChanged: (value) {
                 filterBus(value);
@@ -266,10 +283,10 @@ class BusListCard extends StatelessWidget {
       },
       child: Container(
         width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        padding: EdgeInsets.all(5),
+        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        // padding: EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFFFAFAFA),
           boxShadow: [
             BoxShadow(
               color: Colors.black12,
@@ -283,10 +300,10 @@ class BusListCard extends StatelessWidget {
           spacing: 10,
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 70,
+              height: 70,
               decoration: BoxDecoration(color: HexColor(bus.colorCode)),
-              child: Icon(Icons.directions_bus, size: 40, color: Colors.white),
+              child: Icon(Icons.directions_bus, size: 50, color: Colors.white),
             ),
             Expanded(
               child: Column(

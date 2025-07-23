@@ -11,13 +11,21 @@ class BusCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 5),
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 241, 241, 241),
-        borderRadius: BorderRadius.circular(5),
+        color: const Color(0xFF146BED),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         spacing: 5,
-        children: [Icon(Icons.directions_bus, size: 18), Text(bus.name)],
+        children: [
+          Icon(Icons.directions_bus, size: 18, color: Colors.white),
+          Text(
+            bus.name,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium!.copyWith(color: Colors.white),
+          ),
+        ],
       ),
     );
   }

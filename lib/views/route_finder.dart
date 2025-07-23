@@ -1,179 +1,229 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_location_search/flutter_location_search.dart';
-import 'package:free_map/free_map.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:ybs/controllers/hex_color.dart';
 import 'package:ybs/controllers/search_route_controller.dart';
 import 'package:ybs/data/app_data.dart';
 import 'package:ybs/models/bus.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/models/route_data.dart';
-import 'package:ybs/views/route_page.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:ybs/views/tracking_page.dart';
 
 class RouteFinder extends StatefulWidget {
-  final LatLng currentPosition;
-  const RouteFinder({super.key, required this.currentPosition});
+  final LatLng userPosition;
+  const RouteFinder({super.key, required this.userPosition});
 
   @override
   State<RouteFinder> createState() => _RouteFinderState();
 }
 
 class _RouteFinderState extends State<RouteFinder> {
-  MapController mapController = MapController();
-  List<Marker> markers = [];
+  late MapController mapController = MapController(
+    initPosition: GeoPoint(
+      latitude: widget.userPosition.latitude,
+      longitude: widget.userPosition.longitude,
+    ),
+  );
+  OSMOption option = OSMOption(
+    zoomOption: ZoomOption(initZoom: 13),
+    showZoomController: true,
+  );
+  List<GeoPoint> markers = [];
+  GeoPoint? pointLocation;
   BusStop? selectedStartBusStop;
   BusStop? selectedEndBusStop;
+  List<LatLng> routePoints = [];
+  List<GeoPoint> busStopPoints = [];
 
   String start = "";
   String end = "";
 
-  LatLng? pointLocation;
+  // setBusStopMarker(BuildContext context) async {
+  //   if (busStopPoints.isNotEmpty) {
+  //     await mapController.removeMarkers(busStopPoints);
+  //     busStopPoints.clear();
+  //   }
 
-  setBusStopMarker(BuildContext context) {
-    markers.clear();
-    for (var i in AppData.testStop) {
-      markers.add(
-        Marker(
-          point: LatLng(i.latitude, i.longitude),
-          child: GestureDetector(
-            onTap: () {
-              showModalBottomSheet(
-                constraints: BoxConstraints(maxHeight: 300),
-                context: context,
-                builder: (context) => Column(
-                  children: [
-                    SizedBox(height: 20),
-                    Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
+  //   for (var stop in AppData.testStop) {
+  //     final point = GeoPoint(
+  //       latitude: stop.latitude,
+  //       longitude: stop.longitude,
+  //     );
 
-                      child: Row(
-                        spacing: 10,
-                        children: [
-                          Image.asset(
-                            "assets/images/bus_stop_1.png",
-                            width: 24,
-                          ),
-                          Text(
-                            i.name,
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "အနီးရှိ နေရာများ",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.all(10),
-                        child: Text(
-                          i.nearPlaces,
-                          style: TextStyle(fontSize: 12),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      spacing: 5,
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              selectedStartBusStop = i;
-                              start = i.name;
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(10),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 235, 235, 235),
-                                borderRadius: BorderRadius.horizontal(
-                                  left: Radius.circular(40),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.location_on, color: Colors.red),
-                                  Text("စမှတ်တိုင်"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 235, 235, 235),
-                              borderRadius: BorderRadius.horizontal(
-                                right: Radius.circular(40),
-                              ),
-                            ),
-                            child: GestureDetector(
-                              onTap: () {
-                                selectedEndBusStop = i;
-                                end = i.name;
-                                Navigator.pop(context);
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.location_on, color: Colors.blue),
-                                  Text("ဆုံးမှတ်တိုင်"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                  ],
-                ),
-              ).then((value) {
-                setState(() {});
-              });
-            },
-            child: Image.asset("assets/images/bus_stop_1.png", width: 14),
+  //     busStopPoints.add(point);
+
+  //     await mapController.addMarker(
+  //       point,
+  //       markerIcon: MarkerIcon(
+  //         iconWidget: GestureDetector(
+  //           onTap: () {
+  //             showModalBottomSheet(
+  //               constraints: BoxConstraints(maxHeight: 300),
+  //               context: context,
+  //               builder: (context) => Column(
+  //                 children: [
+  //                   SizedBox(height: 20),
+  //                   Container(
+  //                     width: double.infinity,
+  //                     margin: EdgeInsets.symmetric(
+  //                       horizontal: 20,
+  //                       vertical: 10,
+  //                     ),
+  //                     child: Row(
+  //                       children: [
+  //                         Image.asset(
+  //                           "assets/images/bus_stop_1.png",
+  //                           width: 84,
+  //                         ),
+  //                         SizedBox(width: 10),
+  //                         Text(
+  //                           stop.name,
+  //                           style: TextStyle(
+  //                             color: Colors.blue,
+  //                             fontSize: 18,
+  //                             fontWeight: FontWeight.bold,
+  //                           ),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                   Padding(
+  //                     padding: const EdgeInsets.all(8.0),
+  //                     child: Text(
+  //                       "အနီးရှိ နေရာများ",
+  //                       style: TextStyle(
+  //                         color: Colors.grey,
+  //                         fontWeight: FontWeight.bold,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   Expanded(
+  //                     child: SingleChildScrollView(
+  //                       padding: EdgeInsets.all(10),
+  //                       child: Text(
+  //                         stop.nearPlaces,
+  //                         style: TextStyle(fontSize: 12),
+  //                         textAlign: TextAlign.center,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: 10),
+  //                   Row(
+  //                     children: [
+  //                       Expanded(
+  //                         child: GestureDetector(
+  //                           onTap: () {
+  //                             selectedStartBusStop = stop;
+  //                             start = stop.name;
+  //                             Navigator.pop(context);
+  //                             setState(() {});
+  //                           },
+  //                           child: Container(
+  //                             padding: EdgeInsets.all(10),
+  //                             alignment: Alignment.center,
+  //                             decoration: BoxDecoration(
+  //                               color: const Color.fromARGB(255, 235, 235, 235),
+  //                               borderRadius: BorderRadius.horizontal(
+  //                                 left: Radius.circular(40),
+  //                               ),
+  //                             ),
+  //                             child: Row(
+  //                               mainAxisAlignment: MainAxisAlignment.center,
+  //                               children: [
+  //                                 Icon(Icons.location_on, color: Colors.red),
+  //                                 Text("စမှတ်တိုင်"),
+  //                               ],
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       Expanded(
+  //                         child: GestureDetector(
+  //                           onTap: () {
+  //                             selectedEndBusStop = stop;
+  //                             end = stop.name;
+  //                             Navigator.pop(context);
+  //                             setState(() {});
+  //                           },
+  //                           child: Container(
+  //                             padding: EdgeInsets.all(10),
+  //                             alignment: Alignment.center,
+  //                             decoration: BoxDecoration(
+  //                               color: const Color.fromARGB(255, 235, 235, 235),
+  //                               borderRadius: BorderRadius.horizontal(
+  //                                 right: Radius.circular(40),
+  //                               ),
+  //                             ),
+  //                             child: Row(
+  //                               mainAxisAlignment: MainAxisAlignment.center,
+  //                               children: [
+  //                                 Icon(Icons.location_on, color: Colors.blue),
+  //                                 Text("ဆုံးမှတ်တိုင်"),
+  //                               ],
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                   SizedBox(height: 10),
+  //                 ],
+  //               ),
+  //             ).then((_) => setState(() {}));
+  //           },
+  //           child: Container(
+  //             padding: EdgeInsets.all(5),
+  //             width: 100,
+  //             height: 100,
+  //             child: Image.asset("assets/images/bus_stop_1.png"),
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  setBusStopMarker(BuildContext context) async {
+    if (busStopPoints.isNotEmpty) {
+      await mapController.removeMarkers(busStopPoints);
+      busStopPoints.clear();
+    }
+
+    for (var stop in AppData.testStop) {
+      final point = GeoPoint(
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+      );
+
+      busStopPoints.add(point);
+
+      await mapController.addMarker(
+        point,
+        markerIcon: MarkerIcon(
+          iconWidget: Container(
+            padding: EdgeInsets.all(5),
+            width: 100,
+            height: 100,
+            child: Image.asset("assets/images/bus_stop_1.png"),
           ),
         ),
       );
     }
-    setState(() {});
   }
 
   clearAllData() {
-    markers.clear();
     selectedStartBusStop = null;
     selectedEndBusStop = null;
     start = "";
     end = "";
-    pointLocation = null;
     setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    setBusStopMarker(context);
   }
 
   @override
@@ -182,27 +232,202 @@ class _RouteFinderState extends State<RouteFinder> {
     super.dispose();
   }
 
+  void _showAvailableRoutes() {
+    if (selectedStartBusStop != null && selectedEndBusStop != null) {
+      List<List<RouteData>> routeDataList = SearchRouteController().searchRoute(
+        selectedStartBusStop!,
+        selectedEndBusStop!,
+      );
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => AvailableRouteWidget(
+          selectedStartBusStop: selectedStartBusStop,
+          selectedEndBusStop: selectedEndBusStop,
+          routeList: routeDataList,
+          userPosition: GeoPoint(
+            latitude: widget.userPosition.latitude,
+            longitude: widget.userPosition.longitude,
+          ),
+          onSelectRoute: (selectedRoute) async {
+            Navigator.pop(context);
+          },
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          FmMap(
-            mapController: mapController,
-            mapOptions: MapOptions(
-              initialCenter: widget.currentPosition,
-              minZoom: 3,
-              maxZoom: 16,
-              initialZoom: 13,
-              keepAlive: true,
-            ),
-            markers: markers,
+          OSMFlutter(
+            controller: mapController,
+            osmOption: option,
+            onMapIsReady: (isReady) async {
+              if (isReady) {
+                await setBusStopMarker(context);
+              }
+            },
+            onGeoPointClicked: (point) {
+              final stop = AppData.testStop.firstWhere(
+                (s) =>
+                    s.latitude == point.latitude &&
+                    s.longitude == point.longitude,
+              );
+
+              showModalBottomSheet(
+                constraints: BoxConstraints(maxHeight: 300),
+                context: context,
+                builder: (context) => PointerInterceptor(
+                  child: SafeArea(
+                    top: false,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 20),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                "assets/images/bus_stop_1.png",
+                                width: 50,
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                stop.name,
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            "အနီးရှိ နေရာများ",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.all(10),
+                            child: Text(
+                              stop.nearPlaces,
+                              style: TextStyle(fontSize: 12),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Row(
+                            spacing: 10,
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    selectedStartBusStop = stop;
+                                    start = stop.name;
+                                    Navigator.pop(context);
+                                    _showAvailableRoutes();
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(10),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(
+                                        255,
+                                        235,
+                                        235,
+                                        235,
+                                      ),
+                                      borderRadius: BorderRadius.horizontal(
+                                        left: Radius.circular(40),
+                                        right: Radius.circular(40),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.location_on,
+                                          color: Colors.red,
+                                        ),
+                                        Text("စမှတ်တိုင်"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    selectedEndBusStop = stop;
+                                    end = stop.name;
+                                    Navigator.pop(context);
+                                    _showAvailableRoutes();
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(10),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: const Color.fromARGB(
+                                        255,
+                                        235,
+                                        235,
+                                        235,
+                                      ),
+                                      borderRadius: BorderRadius.horizontal(
+                                        left: Radius.circular(40),
+                                        right: Radius.circular(40),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.location_on,
+                                          color: Colors.blue,
+                                        ),
+                                        Text("ဆုံးမှတ်တိုင်"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+                ),
+              ).then((_) => setState(() {}));
+            },
           ),
           Positioned(
             top: 40,
-            left: 5,
-            right: 5,
+            left: 12,
+            right: 12,
             child: GestureDetector(
               onTap: () {
                 showModalBottomSheet(
@@ -216,6 +441,7 @@ class _RouteFinderState extends State<RouteFinder> {
                         start = selectedStop.name;
                       });
                       Navigator.pop(context);
+                      _showAvailableRoutes();
                     },
                   ),
                 );
@@ -242,8 +468,8 @@ class _RouteFinderState extends State<RouteFinder> {
           ),
           Positioned(
             top: 100,
-            left: 5,
-            right: 5,
+            left: 12,
+            right: 12,
             child: GestureDetector(
               onTap: () {
                 showModalBottomSheet(
@@ -257,6 +483,7 @@ class _RouteFinderState extends State<RouteFinder> {
                         end = selectedStop.name;
                       });
                       Navigator.pop(context);
+                      _showAvailableRoutes();
                     },
                   ),
                 );
@@ -277,50 +504,6 @@ class _RouteFinderState extends State<RouteFinder> {
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 160,
-            right: 5,
-            child: MaterialButton(
-              shape: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              color: Colors.blue,
-              onPressed: () {
-                if (selectedStartBusStop != null &&
-                    selectedEndBusStop != null) {
-                  List<List<RouteData>> routeDataList = SearchRouteController()
-                      .searchRoute(selectedStartBusStop!, selectedEndBusStop!);
-                  setState(() {});
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (context) => AvaliableRouteWidget(
-                      selectedStartBusStop: selectedStartBusStop,
-                      selectedEndBusStop: selectedEndBusStop,
-                      routeList: routeDataList,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: Duration(seconds: 1),
-                      content: Text("စမှတ်၊ ဆုံးမှတ် ရွေးချယ်ပါ။"),
-                    ),
-                  );
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "လမ်းကြောင်းရှာပါ",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ),
             ),
@@ -346,11 +529,11 @@ class _RouteFinderState extends State<RouteFinder> {
                       mode: Mode.fullscreen,
                     );
                     if (locationData != null) {
-                      pointLocation = LatLng(
-                        locationData.latitude,
-                        locationData.longitude,
+                      pointLocation = GeoPoint(
+                        latitude: locationData.latitude,
+                        longitude: locationData.longitude,
                       );
-                      mapController.move(pointLocation!, 13);
+                      mapController.moveTo(pointLocation!, animate: true);
                     }
                   },
                   icon: Icon(Icons.pin_drop_rounded, color: Colors.red),
@@ -360,12 +543,22 @@ class _RouteFinderState extends State<RouteFinder> {
                     backgroundColor: WidgetStatePropertyAll(Colors.white),
                   ),
                   onPressed: () {
-                    mapController.move(
-                      LatLng(
-                        widget.currentPosition.latitude,
-                        widget.currentPosition.longitude,
+                    GeoPoint currentGeoPoint = GeoPoint(
+                      latitude: widget.userPosition.latitude,
+                      longitude: widget.userPosition.longitude,
+                    );
+                    mapController.moveTo(currentGeoPoint, animate: true);
+                    mapController.zoomIn();
+                    mapController.removeMarker(currentGeoPoint);
+                    mapController.addMarker(
+                      currentGeoPoint,
+                      markerIcon: MarkerIcon(
+                        icon: Icon(
+                          Icons.gps_fixed_sharp,
+                          color: Colors.blue,
+                          size: 80.0,
+                        ),
                       ),
-                      13,
                     );
                   },
                   icon: Icon(Icons.gps_fixed, color: Colors.blue),
@@ -403,11 +596,6 @@ class _BusStopSearchState extends State<BusStopSearch> {
           )
           .toList();
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -549,16 +737,20 @@ class _BusStopSearchState extends State<BusStopSearch> {
   }
 }
 
-class AvaliableRouteWidget extends StatelessWidget {
+class AvailableRouteWidget extends StatelessWidget {
   final BusStop? selectedStartBusStop;
   final BusStop? selectedEndBusStop;
   final List<List<RouteData>> routeList;
+  final Function(List<RouteData>) onSelectRoute;
+  final GeoPoint userPosition;
 
-  const AvaliableRouteWidget({
+  const AvailableRouteWidget({
     super.key,
     required this.selectedStartBusStop,
     required this.selectedEndBusStop,
     required this.routeList,
+    required this.onSelectRoute,
+    required this.userPosition,
   });
 
   @override
@@ -622,7 +814,9 @@ class AvaliableRouteWidget extends StatelessWidget {
             child: ListView.builder(
               itemCount: routeList.length,
               itemBuilder: (context, index) =>
-                  routeButton(context, routeList[index], buses[index]),
+                  routeButton(context, routeList[index], buses[index], () {
+                    onSelectRoute.call(routeList[index]);
+                  }),
             ),
           ),
         ],
@@ -634,13 +828,17 @@ class AvaliableRouteWidget extends StatelessWidget {
     BuildContext context,
     List<RouteData> routeList,
     Set<Bus> buses,
+    Function() onTap,
   ) {
     return GestureDetector(
       onTap: () {
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => RoutePage(route: routeList)),
+          MaterialPageRoute(
+            builder: (context) =>
+                TrackingPage(route: routeList, userPosition: userPosition),
+          ),
         );
       },
       child: Container(
