@@ -13,6 +13,7 @@ import 'package:ybs/main.dart';
 import 'package:ybs/models/bus.dart';
 import 'package:ybs/models/bus_stop.dart';
 import 'package:ybs/models/route_data.dart';
+import 'package:ybs/views/thank_you_page.dart';
 
 class TrackingPage extends StatefulWidget {
   final List<RouteData> route;
@@ -27,7 +28,11 @@ class TrackingPage extends StatefulWidget {
   State<TrackingPage> createState() => _TrackingPageState();
 }
 
-class _TrackingPageState extends State<TrackingPage> {
+class _TrackingPageState extends State<TrackingPage>
+    with WidgetsBindingObserver {
+  AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
+  bool _shouldShowAlertDialog = false;
+  bool _shouldNavigateThankYou = false;
   late BusStop nextStop;
   int currentIndex = 0;
   String currentLocation = "You are not currently tracking!!";
@@ -141,6 +146,45 @@ class _TrackingPageState extends State<TrackingPage> {
     });
   }
 
+  void _showNearDestinationAlert() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          icon: Icon(
+            Icons.directions_bus_outlined,
+            color: Colors.grey,
+            size: 29.0,
+          ),
+          title: Text(
+            'The YBS ${widget.route.last.bus.name} will arrived your destination (${widget.route.last.busStop.name}) after 2 bus-stops. Preparing to get off.',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            "Don't forgot to bring your belonging before you getting off. Thank you for your ride. Have a great day!",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+              color: Color(0xFF49454F),
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: Colors.amber,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void checkLocation(double lat, double lon) {
     final distance = Geolocator.distanceBetween(
       lat,
@@ -172,12 +216,30 @@ class _TrackingPageState extends State<TrackingPage> {
         showNoti();
       }
     } else if (distance < 10) {
+      if (currentIndex == widget.route.length - 3) {
+        if (_appLifecycleState == AppLifecycleState.resumed &&
+            context.mounted) {
+          _showNearDestinationAlert();
+        } else {
+          _shouldShowAlertDialog = true;
+        }
+      }
+
       arrivedStops.add(widget.route[currentIndex].busStop);
       if (currentIndex < widget.route.length - 1) {
         currentIndex = currentIndex + 1;
         nextStop = widget.route[currentIndex].busStop;
       } else {
-        currentLocation = "You are arrived to your destination";
+        currentLocation = "You have arrived to your destination";
+        if (_appLifecycleState == AppLifecycleState.resumed &&
+            context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ThankYouPage()),
+          );
+        } else {
+          _shouldNavigateThankYou = true;
+        }
         stageImage = "assets/images/bus_stop.png";
         if (notiShown == false) {
           AppData.flutterTts.speak(currentLocation);
@@ -232,6 +294,7 @@ class _TrackingPageState extends State<TrackingPage> {
     super.initState();
     controller = MapController(initPosition: userLocation);
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestPermissions();
       _initService();
@@ -244,8 +307,29 @@ class _TrackingPageState extends State<TrackingPage> {
   @override
   void dispose() {
     controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _appLifecycleState = state;
+
+    if (state == AppLifecycleState.resumed) {
+      if (_shouldShowAlertDialog) {
+        _shouldShowAlertDialog = false;
+        _showNearDestinationAlert();
+      }
+
+      if (_shouldNavigateThankYou) {
+        _shouldNavigateThankYou = false;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ThankYouPage()),
+        );
+      }
+    }
   }
 
   @override
@@ -389,6 +473,12 @@ class _TrackingPageState extends State<TrackingPage> {
 }
 
 class TrackingWidget extends StatefulWidget {
+  final String currentLocation;
+  final String distance;
+  final List<RouteData> route;
+  final List<BusStop> arrivedStops;
+  final BusStop nextStop;
+
   const TrackingWidget({
     super.key,
     required this.currentLocation,
@@ -397,12 +487,6 @@ class TrackingWidget extends StatefulWidget {
     required this.arrivedStops,
     required this.nextStop,
   });
-
-  final String currentLocation;
-  final String distance;
-  final List<RouteData> route;
-  final List<BusStop> arrivedStops;
-  final BusStop nextStop;
 
   @override
   State<TrackingWidget> createState() => _TrackingWidgetState();
