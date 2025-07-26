@@ -31,21 +31,26 @@ class TrackingPage extends StatefulWidget {
 class _TrackingPageState extends State<TrackingPage>
     with WidgetsBindingObserver {
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
-  bool _shouldShowAlertDialog = false;
-  bool _shouldNavigateThankYou = false;
+
   late BusStop nextStop;
   int currentIndex = 0;
   String currentLocation = "You are not currently tracking!!";
+
   bool isTracking = false;
   bool locationEnable = false;
   bool notiShown = false;
   bool isMapReady = false;
+
   String stageImage = "assets/images/navigation.gif";
   late MapController controller;
   OSMOption option = OSMOption(zoomOption: ZoomOption(initZoom: 14));
   late GeoPoint userLocation = widget.userPosition;
   String distance = "";
   List<BusStop> arrivedStops = [];
+
+  bool _shouldShowAlertDialog = false;
+  bool _shouldNavigateThankYou = false;
+  bool hasNavigatedToThankYou = false;
 
   showNoti() {
     notiShown = true;
@@ -231,15 +236,19 @@ class _TrackingPageState extends State<TrackingPage>
         nextStop = widget.route[currentIndex].busStop;
       } else {
         currentLocation = "You have arrived to your destination";
-        if (_appLifecycleState == AppLifecycleState.resumed &&
-            context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ThankYouPage()),
-          );
-        } else {
-          _shouldNavigateThankYou = true;
+        if (!hasNavigatedToThankYou) {
+          hasNavigatedToThankYou = true;
+          if (_appLifecycleState == AppLifecycleState.resumed &&
+              context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ThankYouPage()),
+            );
+          } else {
+            _shouldNavigateThankYou = true;
+          }
         }
+
         stageImage = "assets/images/bus_stop.png";
         if (notiShown == false) {
           AppData.flutterTts.speak(currentLocation);
@@ -322,7 +331,8 @@ class _TrackingPageState extends State<TrackingPage>
         _showNearDestinationAlert();
       }
 
-      if (_shouldNavigateThankYou) {
+      if (_shouldNavigateThankYou && !hasNavigatedToThankYou) {
+        hasNavigatedToThankYou = true;
         _shouldNavigateThankYou = false;
         Navigator.push(
           context,
@@ -626,210 +636,225 @@ class _TrackingWidgetState extends State<TrackingWidget> {
           ),
 
           showTrack
-              ? SizedBox(
-                  width: double.infinity,
-                  height: 250,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Row(
-                            spacing: 5,
-                            children: [
-                              Icon(Icons.directions_walk, color: Colors.grey),
-                              SizedBox(height: 18),
-                            ],
+              ? SafeArea(
+                  top: false,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 250,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              spacing: 5,
+                              children: [
+                                Icon(Icons.directions_walk, color: Colors.grey),
+                                SizedBox(height: 18),
+                              ],
+                            ),
                           ),
-                        ),
-                        for (int i = 0; i < widget.route.length; i++)
-                          isTransitStop(i, widget.route[i].busStop)
-                              ? Padding(
-                                  padding: const EdgeInsets.only(left: 8),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        height: 30,
-                                        width: 4,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              widget.arrivedStops.contains(
-                                                widget.route[i].busStop,
-                                              )
-                                              ? Colors.green
-                                              : Colors.grey,
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(4),
-                                            bottom: Radius.circular(4),
+                          for (int i = 0; i < widget.route.length; i++)
+                            isTransitStop(i, widget.route[i].busStop)
+                                ? Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          height: 30,
+                                          width: 4,
+                                          margin: EdgeInsets.symmetric(
+                                            horizontal: 10,
                                           ),
-                                        ),
-                                      ),
-                                      Row(
-                                        spacing: 5,
-                                        children: [
-                                          Icon(
-                                            Icons.compare_arrows,
+                                          decoration: BoxDecoration(
                                             color:
                                                 widget.arrivedStops.contains(
                                                   widget.route[i].busStop,
                                                 )
                                                 ? Colors.green
                                                 : Colors.grey,
-                                          ),
-                                          widget.route[i].busStop ==
-                                                  widget.nextStop
-                                              ? SizedBox(
-                                                  height: 18,
-                                                  child: AnimatedTextKit(
-                                                    repeatForever: true,
-                                                    animatedTexts: [
-                                                      FadeAnimatedText(
-                                                        widget
-                                                            .route[i]
-                                                            .busStop
-                                                            .name,
-                                                        textStyle: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.blue,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                              : widget.arrivedStops.contains(
-                                                  widget.route[i].busStop,
-                                                )
-                                              ? Text(
-                                                  widget.route[i].busStop.name,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                  ),
-                                                )
-                                              : Text(
-                                                  widget.route[i].busStop.name,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : isShowStop(i, widget.route[i].busStop)
-                              ? Padding(
-                                  padding: const EdgeInsets.only(left: 8),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      isTransitWay(i, widget.route[i].bus)
-                                          ? Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                  ),
-                                              child: Icon(
-                                                Icons.directions_walk,
-                                                color:
-                                                    widget.arrivedStops
-                                                        .contains(
-                                                          widget
-                                                              .route[i]
-                                                              .busStop,
-                                                        )
-                                                    ? Colors.green
-                                                    : Colors.grey,
-                                              ),
-                                            )
-                                          : Container(
-                                              height: 30,
-                                              width: 4,
-                                              margin: EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    widget.arrivedStops
-                                                        .contains(
-                                                          widget
-                                                              .route[i]
-                                                              .busStop,
-                                                        )
-                                                    ? Colors.green
-                                                    : Colors.grey,
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                      top: Radius.circular(4),
-                                                      bottom: Radius.circular(
-                                                        4,
-                                                      ),
-                                                    ),
-                                              ),
+                                            borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(4),
+                                              bottom: Radius.circular(4),
                                             ),
-                                      Row(
-                                        spacing: 5,
-                                        children: [
-                                          Icon(
-                                            Icons.fiber_manual_record,
-                                            color:
-                                                widget.arrivedStops.contains(
-                                                  widget.route[i].busStop,
-                                                )
-                                                ? Colors.amber
-                                                : Colors.grey,
                                           ),
-                                          widget.route[i].busStop ==
-                                                  widget.nextStop
-                                              ? SizedBox(
-                                                  height: 18,
-                                                  child: AnimatedTextKit(
-                                                    repeatForever: true,
-                                                    animatedTexts: [
-                                                      FadeAnimatedText(
-                                                        widget
-                                                            .route[i]
-                                                            .busStop
-                                                            .name,
-                                                        textStyle: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.blue,
+                                        ),
+                                        Row(
+                                          spacing: 5,
+                                          children: [
+                                            Icon(
+                                              Icons.compare_arrows,
+                                              color:
+                                                  widget.arrivedStops.contains(
+                                                    widget.route[i].busStop,
+                                                  )
+                                                  ? Colors.green
+                                                  : Colors.grey,
+                                            ),
+                                            widget.route[i].busStop ==
+                                                    widget.nextStop
+                                                ? SizedBox(
+                                                    height: 18,
+                                                    child: AnimatedTextKit(
+                                                      repeatForever: true,
+                                                      animatedTexts: [
+                                                        FadeAnimatedText(
+                                                          widget
+                                                              .route[i]
+                                                              .busStop
+                                                              .name,
+                                                          textStyle: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors.blue,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                : widget.arrivedStops.contains(
+                                                    widget.route[i].busStop,
+                                                  )
+                                                ? Text(
+                                                    widget
+                                                        .route[i]
+                                                        .busStop
+                                                        .name,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    widget
+                                                        .route[i]
+                                                        .busStop
+                                                        .name,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : isShowStop(i, widget.route[i].busStop)
+                                ? Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        isTransitWay(i, widget.route[i].bus)
+                                            ? Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                    ),
+                                                child: Icon(
+                                                  Icons.directions_walk,
+                                                  color:
+                                                      widget.arrivedStops
+                                                          .contains(
+                                                            widget
+                                                                .route[i]
+                                                                .busStop,
+                                                          )
+                                                      ? Colors.green
+                                                      : Colors.grey,
+                                                ),
+                                              )
+                                            : Container(
+                                                height: 30,
+                                                width: 4,
+                                                margin: EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      widget.arrivedStops
+                                                          .contains(
+                                                            widget
+                                                                .route[i]
+                                                                .busStop,
+                                                          )
+                                                      ? Colors.green
+                                                      : Colors.grey,
+                                                  borderRadius:
+                                                      BorderRadius.vertical(
+                                                        top: Radius.circular(4),
+                                                        bottom: Radius.circular(
+                                                          4,
                                                         ),
                                                       ),
-                                                    ],
-                                                  ),
-                                                )
-                                              : widget.arrivedStops.contains(
-                                                  widget.route[i].busStop,
-                                                )
-                                              ? Text(
-                                                  widget.route[i].busStop.name,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                  ),
-                                                )
-                                              : Text(
-                                                  widget.route[i].busStop.name,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey,
-                                                  ),
                                                 ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : SizedBox(),
-                      ],
+                                              ),
+                                        Row(
+                                          spacing: 5,
+                                          children: [
+                                            Icon(
+                                              Icons.fiber_manual_record,
+                                              color:
+                                                  widget.arrivedStops.contains(
+                                                    widget.route[i].busStop,
+                                                  )
+                                                  ? Colors.amber
+                                                  : Colors.grey,
+                                            ),
+                                            widget.route[i].busStop ==
+                                                    widget.nextStop
+                                                ? SizedBox(
+                                                    height: 18,
+                                                    child: AnimatedTextKit(
+                                                      repeatForever: true,
+                                                      animatedTexts: [
+                                                        FadeAnimatedText(
+                                                          widget
+                                                              .route[i]
+                                                              .busStop
+                                                              .name,
+                                                          textStyle: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors.blue,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                : widget.arrivedStops.contains(
+                                                    widget.route[i].busStop,
+                                                  )
+                                                ? Text(
+                                                    widget
+                                                        .route[i]
+                                                        .busStop
+                                                        .name,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    widget
+                                                        .route[i]
+                                                        .busStop
+                                                        .name,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : SizedBox(),
+                        ],
+                      ),
                     ),
                   ),
                 )

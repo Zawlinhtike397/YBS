@@ -36,7 +36,7 @@ class ThankYouPage extends StatelessWidget {
                         backgroundColor: Color(0xFF333333),
                       ),
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => MainPage()),
                         );

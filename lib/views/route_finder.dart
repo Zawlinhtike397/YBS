@@ -39,7 +39,7 @@ class _RouteFinderState extends State<RouteFinder> {
 
   String start = "";
   String end = "";
-  
+
   setBusStopMarker(BuildContext context) async {
     if (busStopPoints.isNotEmpty) {
       await mapController.removeMarkers(busStopPoints);
@@ -88,7 +88,9 @@ class _RouteFinderState extends State<RouteFinder> {
   }
 
   void _showAvailableRoutes() {
-    if (selectedStartBusStop != null && selectedEndBusStop != null) {
+    if (selectedStartBusStop != null &&
+        selectedEndBusStop != null &&
+        selectedStartBusStop != selectedEndBusStop) {
       List<List<RouteData>> routeDataList = SearchRouteController().searchRoute(
         selectedStartBusStop!,
         selectedEndBusStop!,
