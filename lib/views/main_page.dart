@@ -88,10 +88,7 @@ class _MainPageState extends State<MainPage> {
       userPosition = await getPosition();
       pages = [
         RouteFinder(
-          userPosition: LatLng(
-            userPosition!.latitude,
-            userPosition!.longitude,
-          ),
+          userPosition: LatLng(userPosition!.latitude, userPosition!.longitude),
         ),
         BusListPage(),
         NotificationPage(),
@@ -118,55 +115,61 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? Scaffold(
-            body: SizedBox(
-              width: double.infinity,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset("assets/icons/icon.png", width: 90),
-                  SizedBox(height: 40),
-                  CircularProgressIndicator(),
-                ],
-              ),
-            ),
-          )
-        : Scaffold(
-            body: pages[selectedIndex],
-            bottomNavigationBar: NavigationBarTheme(
-              data: NavigationBarThemeData(
-                surfaceTintColor: Colors.transparent,
-                indicatorColor: Color(0xFFFFD32C),
-                backgroundColor: Color(0xFFF3EDF7),
-
-                iconTheme: WidgetStatePropertyAll(
-                  IconThemeData(color: Colors.black),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        SystemNavigator.pop();
+      },
+      child: isLoading
+          ? Scaffold(
+              body: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset("assets/icons/icon.png", width: 90),
+                    SizedBox(height: 40),
+                    CircularProgressIndicator(),
+                  ],
                 ),
               ),
-              child: NavigationBar(
-                destinations: [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined, size: 28),
-                    label: 'Home',
+            )
+          : Scaffold(
+              body: pages[selectedIndex],
+              bottomNavigationBar: NavigationBarTheme(
+                data: NavigationBarThemeData(
+                  surfaceTintColor: Colors.transparent,
+                  indicatorColor: Color(0xFFFFD32C),
+                  backgroundColor: Color(0xFFF3EDF7),
+
+                  iconTheme: WidgetStatePropertyAll(
+                    IconThemeData(color: Colors.black),
                   ),
-                  NavigationDestination(
-                    icon: Icon(Icons.directions_bus_outlined, size: 28),
-                    label: "YBS Guide",
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.notifications_outlined, size: 28),
-                    label: "Notification",
-                  ),
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (int index) {
-                  setState(() {
-                    selectedIndex = index;
-                  });
-                },
+                ),
+                child: NavigationBar(
+                  destinations: [
+                    NavigationDestination(
+                      icon: Icon(Icons.home_outlined, size: 28),
+                      label: 'Home',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.directions_bus_outlined, size: 28),
+                      label: "YBS Guide",
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.notifications_outlined, size: 28),
+                      label: "Notification",
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (int index) {
+                    setState(() {
+                      selectedIndex = index;
+                    });
+                  },
+                ),
               ),
             ),
-          );
+    );
   }
 }

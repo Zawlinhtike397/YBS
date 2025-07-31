@@ -53,7 +53,7 @@ class AppData {
 
   static final Bus busOne = Bus(
     id: 1,
-    name: "Bus One",
+    name: "65",
     routeName: "နဝရတ် ⇆ ကျော်စွာ",
     colorCode: "#DF504E",
     routeOne: [1, 2],
@@ -62,7 +62,7 @@ class AppData {
 
   static final Bus busTwo = Bus(
     id: 2,
-    name: "Bus Two",
+    name: "41",
     routeName: "ကျော်စွာ ⇆ ထန်းခြောက်ပင်",
     colorCode: "#405CAA",
     routeOne: [2, 3, 4, 5, 6, 7],
