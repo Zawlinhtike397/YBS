@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
@@ -52,6 +51,8 @@ class _TrackingPageState extends State<TrackingPage>
   bool _shouldNavigateThankYou = false;
   bool hasNavigatedToThankYou = false;
 
+  GeoPoint? _lastUserLocationMarker;
+
   showNoti() {
     notiShown = true;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -60,9 +61,6 @@ class _TrackingPageState extends State<TrackingPage>
   }
 
   Future<void> _requestPermissions() async {
-    // Android 13+, you need to allow notification permission to display foreground service notification.
-    //
-    // iOS: If you need notification, ask for permission.
     final NotificationPermission notificationPermission =
         await FlutterForegroundTask.checkNotificationPermission();
     if (notificationPermission != NotificationPermission.granted) {
@@ -70,11 +68,7 @@ class _TrackingPageState extends State<TrackingPage>
     }
 
     if (Platform.isAndroid) {
-      // Android 12+, there are restrictions on starting a foreground service.
-      //
-      // To restart the service on device reboot or unexpected problem, you need to allow below permission.
       if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
-        // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
       }
     }
@@ -127,18 +121,21 @@ class _TrackingPageState extends State<TrackingPage>
     );
 
     if (isMapReady) {
-      controller.removeMarker(userLocation);
-      userLocation = location;
-      controller.addMarker(
+      if (_lastUserLocationMarker != null) {
+        await controller.removeMarker(_lastUserLocationMarker!);
+      }
+
+      _lastUserLocationMarker = location;
+
+      await controller.addMarker(
         location,
         markerIcon: MarkerIcon(
           icon: Icon(Icons.location_history, size: 50, color: Colors.blue),
         ),
       );
-      controller.moveTo(location, animate: false);
+      await controller.moveTo(location, animate: false);
     }
     if (isTracking) {
-      print("Change Location");
       checkLocation(double.parse(obj["lat"]), double.parse(obj["lon"]));
     }
   }
@@ -284,12 +281,7 @@ class _TrackingPageState extends State<TrackingPage>
     for (var i in markers) {
       await controller.addMarker(i);
     }
-    controller.addMarker(
-      userLocation,
-      markerIcon: MarkerIcon(
-        icon: Icon(Icons.location_history, size: 50, color: Colors.blue),
-      ),
-    );
+
     await controller.drawRoad(
       markers.first,
       markers.last,
