@@ -376,29 +376,6 @@ class _RouteFinderState extends State<RouteFinder> {
                   style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(Colors.white),
                   ),
-                  onPressed: () async {
-                    LocationData? locationData = await LocationSearch.show(
-                      context: context,
-                      userAgent: UserAgent(
-                        appName: 'Location Search Example',
-                        email: 'support@myapp.com',
-                      ),
-                      mode: Mode.fullscreen,
-                    );
-                    if (locationData != null) {
-                      pointLocation = GeoPoint(
-                        latitude: locationData.latitude,
-                        longitude: locationData.longitude,
-                      );
-                      mapController.moveTo(pointLocation!, animate: true);
-                    }
-                  },
-                  icon: Icon(Icons.pin_drop_rounded, color: Colors.red),
-                ),
-                IconButton.filled(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.white),
-                  ),
                   onPressed: () {
                     GeoPoint currentGeoPoint = GeoPoint(
                       latitude: widget.userPosition.latitude,

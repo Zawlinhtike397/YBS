@@ -27,24 +27,6 @@ class _MainPageState extends State<MainPage> {
   int selectedIndex = 0;
   List<Widget> pages = [];
 
-  Future<void> loadBusStops() async {
-    final data = await rootBundle.loadString('assets/ybs_dump.json');
-    final json = jsonDecode(data);
-    for (var i in json) {
-      final stops = i["stop_list"];
-      for (var stop in stops) {
-        AppData.busStopList.add(
-          BusStop(
-            id: stop["line_no"],
-            name: stop["stop_mm"],
-            latitude: double.parse(stop["lat"]),
-            longitude: double.parse(stop["lng"]),
-          ),
-        );
-      }
-    }
-  }
-
   Future<Position?> getPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -83,7 +65,7 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       isLoading = true;
     });
-    await loadBusStops();
+    // await loadBusStops();
     try {
       userPosition = await getPosition();
       pages = [

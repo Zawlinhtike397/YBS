@@ -1,6 +1,6 @@
 name: ybs
 description: "A new Flutter project."
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
+publish_to: "none" 
 
 version: 1.0.0+1
 
@@ -40,60 +40,25 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.4
 
-# The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - assets/icons/
     - assets/images/
     - assets/fonts/
     - assets/ybs_dump.json
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
   fonts:
     - family: Z01-Umoe002
       fonts:
         - asset: assets/fonts/Z01-Umoe002-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: false
   image_path: "assets/icons/icon.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
-  # web:
-  #   generate: false
-  #   image_path: "path/to/image.png"
-  #   background_color: "#hexcode"
-  #   theme_color: "#hexcode"
-  # windows:
-  #   generate: false
-  #   image_path: "path/to/image.png"
-  #   icon_size: 48 # min:48, max:256, default: 48
-  # macos:
-  #   generate: true
-  #   image_path: "path/to/image.png"
+  min_sdk_android: 21 
 
 flutter_native_splash:
   color: "#ffffff"
